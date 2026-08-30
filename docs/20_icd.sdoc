@@ -1,0 +1,424 @@
+[DOCUMENT]
+TITLE: KIST DRL G1 인터페이스 정의서 (ICD)
+UID: DOC-ICD
+VERSION: 0.1-demo
+DATE: 2026-08-30
+CLASSIFICATION: Internal
+OPTIONS:
+  MARKUP: RST
+  AUTO_LEVELS: On
+  NODE_IN_TOC: True
+
+[GRAMMAR]
+IMPORT_FROM_FILE: kist_g1.sgra
+
+[TEXT]
+STATEMENT: >>>
+본 문서는 KAPEX-G1 협업 시연 시스템의 컨테이너 간 **인터페이스(ICD)** 를 정의한다.
+
+Notion ``ICD`` 데이터베이스에서 음성 파이프라인 · GUI · 안전 경로에 해당하는 15건을 발췌하였다.
+각 인터페이스는 ``Implements`` 관계로 상위 시스템 요구사항(SYS-REQ)에 연결되어 있으며,
+좌측 상단의 **TRACE / DEEP-TRACE** 화면에서 요구사항 → 인터페이스 → 구현 코드의
+연결을 확인할 수 있다.
+
+.. note::
+
+   Notion의 ``Comm Type`` 선택지 중 ``Getter (Pull)`` / ``Call (Push)`` 는 StrictDoc 문법상
+   선택지 값에 괄호를 쓸 수 없어 ``Getter`` / ``Call`` 로 정규화하였다.
+   마찬가지로 ``분류`` 의 ``기능 (FR)`` 등은 ``FR`` 로 정규화하였다.
+<<<
+
+[[SECTION]]
+TITLE: 음성 입력 경로 (STT)
+
+[TEXT]
+STATEMENT: >>>
+마이크 → STT → orchestrator 로 이어지는 음성 인식 경로이다.
+``SYS-REQ-42`` (센서 수집) 와 ``SYS-REQ-27`` (음성 인식) 을 함께 구현한다.
+<<<
+
+[ICD]
+UID: ICD-3
+TITLE: Mic Audio (ext-sensor → stt)
+COMM_TYPE: DDS Topic
+SOURCE: ext-sensor-io
+TARGET: stt_node
+TOPIC: rt/kist/mic/audio
+MSG_TYPE: kist_msgs::AudioChunk
+QOS: BestEffort
+FREQUENCY: continuous (100 ms chunk)
+STATUS: 진행 중
+STATEMENT: >>>
+``seq`` + ``stamp_ns`` + ``sample_rate=16000`` + ``channels=1`` + ``format=S16_LE``
++ ``data`` (interleaved PCM). 100 ms 청크 단위 발행.
+<<<
+PRECONDITION: mic(ALSA) 활성
+NOTION_URL: https://app.notion.com/360b39de7dd78132b5dacc87945d420b
+COMMENT: >>>
+⚠ **미해결 이슈:** stt_node는 ``g1_onboard_msgs/AudioPCM`` (``/bridge/sensors/audio_pcm``) 을
+기대하므로 타입·토픽 어댑터가 필요하다. ext-sensor가 ``AudioPCM`` 을 직접 발행하는 방안을 권장한다.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-42
+  ROLE: Implements
+- TYPE: Parent
+  VALUE: SYS-REQ-27
+  ROLE: Implements
+
+[ICD]
+UID: ICD-33
+TITLE: STT API (Google Cloud)
+COMM_TYPE: gRPC
+SOURCE: stt_node
+TARGET: Google Cloud STT
+MSG_TYPE: google.cloud.speech.v1
+QOS: N/A
+FREQUENCY: Streaming
+STATUS: 시작 전
+STATEMENT: >>>
+``audio: bytes`` → ``transcript: str``, ``confidence: float``
+<<<
+PRECONDITION: API key 설정 + 네트워크
+NOTION_URL: https://app.notion.com/360b39de7dd78175b385cb8f9f49d2a9
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-27
+  ROLE: Implements
+
+[ICD]
+UID: ICD-64
+TITLE: STT Transcript (stt → orchestrator)
+COMM_TYPE: DDS Topic
+SOURCE: stt_node
+TARGET: orchestrator_node
+TOPIC: /cortex/stt/transcript
+MSG_TYPE: std_msgs/String
+QOS: Reliable
+FREQUENCY: On-demand (is_final)
+STATUS: 진행 중
+STATEMENT: >>>
+``data: str`` — 최종 인식 문장(is_final). orchestrator가 시나리오 trigger 키워드와 매칭한다.
+<<<
+PRECONDITION: stt_node 활성 (Google Cloud STT 스트리밍)
+NOTION_URL: https://app.notion.com/3a9b39de7dd78163bc02eb2eb6a7470d
+COMMENT: OM IF-20 대체.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-27
+  ROLE: Implements
+
+[ICD]
+UID: ICD-42
+TITLE: Speaker State (speaker → stt)
+COMM_TYPE: DDS Topic
+SOURCE: speaker_node
+TARGET: stt_node
+TOPIC: /onboard/audio/speaker_state → /bridge/audio/speaker_state
+MSG_TYPE: g1_onboard_msgs/SpeakerState
+QOS: Reliable
+FREQUENCY: 상태 변화 시 (push/pop transition)
+STATUS: 시작 전
+STATEMENT: >>>
+``playing(bool)`` + ``current_chunk_id(uint32)`` + ``queue_depth(uint8)``.
+
+stt_node는 ``playing=true`` 인 동안 마이크를 뮤트하여 자체 음성 오인식을 방지한다(에코 캔슬).
+<<<
+PRECONDITION: speaker_node 활성 (AudioClient)
+NOTION_URL: https://app.notion.com/361b39de7dd781bd8970c3449617c978
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-27
+  ROLE: Implements
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 음성 출력 경로 (TTS)
+
+[ICD]
+UID: ICD-68
+TITLE: Action Cmd — Speak (orchestrator → tts)
+COMM_TYPE: DDS Topic
+SOURCE: orchestrator_node
+TARGET: tts_node
+TOPIC: /cortex/tts/say
+MSG_TYPE: cortex_msgs/ActionCmd
+QOS: Reliable
+FREQUENCY: On-demand
+STATUS: 진행 중
+STATEMENT: >>>
+``text: str`` — 말할 내용(payload).
+
+open-loop 설계: orchestrator는 발사 후 확인하지 않는다 (``command_id`` / ``status`` 없음).
+<<<
+PRECONDITION: orchestrator speak connector dispatch
+NOTION_URL: https://app.notion.com/3a9b39de7dd781b2945ac4f7add9c70b
+COMMENT: OM IF-26/31 대체.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-29
+  ROLE: Implements
+
+[ICD]
+UID: ICD-34
+TITLE: TTS API (Naver CLOVA)
+COMM_TYPE: HTTPS
+SOURCE: tts_node
+TARGET: Naver CLOVA TTS
+MSG_TYPE: REST API
+QOS: N/A
+FREQUENCY: On-demand
+STATUS: 시작 전
+STATEMENT: >>>
+``text: str``, ``speaker: str`` → ``audio: bytes`` (mp3/wav)
+<<<
+PRECONDITION: API key 설정 + 네트워크
+NOTION_URL: https://app.notion.com/360b39de7dd78125addafc8e0d04155c
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-29
+  ROLE: Implements
+
+[ICD]
+UID: ICD-8
+TITLE: TTS Audio Out (tts → speaker)
+COMM_TYPE: DDS Topic
+SOURCE: tts_node
+TARGET: speaker_node
+TOPIC: /bridge/cmd/audio_out
+MSG_TYPE: g1_onboard_msgs/AudioPCM
+QOS: Reliable
+FREQUENCY: On-demand
+STATUS: 시작 전
+STATEMENT: >>>
+16 kHz / mono / 16 bit PCM. CLOVA 24 kHz 출력을 16 kHz로 resample 후 발행한다.
+speaker_node가 ``AudioClient.PlayStream`` 으로 재생한다.
+<<<
+PRECONDITION: TTS 합성 완료 + speaker_node(AudioClient) 필요
+NOTION_URL: https://app.notion.com/360b39de7dd781288943d6c63d012692
+COMMENT: ⚠ speaker_node(AudioClient 소유) 배치 미정.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-29
+  ROLE: Implements
+
+[ICD]
+UID: ICD-69
+TITLE: Barge-in Stop (orchestrator → tts)
+COMM_TYPE: DDS Topic
+SOURCE: orchestrator_node
+TARGET: tts_node
+TOPIC: /cortex/tts/stop
+MSG_TYPE: std_msgs/Bool
+QOS: Reliable
+FREQUENCY: On-demand
+STATUS: 진행 중
+STATEMENT: >>>
+``data: bool`` (true = 합성 취소).
+
+barge-in / preempt / E-STOP 시 orchestrator가 발사하면 tts_node가 PC측 합성 태스크를 취소한다.
+이미 스피커로 나간 오디오는 회수할 수 없다. fire-and-forget.
+<<<
+PRECONDITION: orchestrator preempt/fail 경로
+NOTION_URL: https://app.notion.com/3a9b39de7dd7819a8e10ed0681d71820
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-29
+  ROLE: Implements
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 시나리오 실행 및 판정
+
+[ICD]
+UID: ICD-65
+TITLE: Active Subtask (orchestrator → vlm)
+COMM_TYPE: DDS Topic
+SOURCE: orchestrator_node
+TARGET: vlm_node
+TOPIC: /cortex/active_subtask
+MSG_TYPE: cortex_msgs/Subtask
+QOS: Reliable
+FREQUENCY: subtask 진입 시
+STATUS: 진행 중
+STATEMENT: >>>
+``id: str`` (subtask name), ``success_check: str`` (VLM 판정 기준 텍스트),
+``timeout_sec: float``.
+
+orchestrator → vlm_node 로 "지금 이것을 판정하라" 는 지시를 전달한다.
+<<<
+PRECONDITION: orchestrator subtask on_create 진입
+NOTION_URL: https://app.notion.com/3a9b39de7dd7819c91bed75cc2e3191c
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+
+[ICD]
+UID: ICD-66
+TITLE: VLM Verdict (vlm → orchestrator)
+COMM_TYPE: DDS Topic
+SOURCE: vlm_node
+TARGET: orchestrator_node
+TOPIC: /cortex/critic/verdict
+MSG_TYPE: cortex_msgs/Verdict
+QOS: Reliable
+FREQUENCY: period_sec (기본 1 Hz)
+STATUS: 진행 중
+STATEMENT: >>>
+``subtask_id: str``, ``passed: bool``.
+
+orchestrator는 tick 루프에서 ``latest_verdict`` 를 폴링한다
+(무거운 추론이 tick을 막지 않도록 캐시).
+<<<
+PRECONDITION: vlm_node 클라우드 VLM 추론 완료
+NOTION_URL: https://app.notion.com/3a9b39de7dd781d89e95d420b3be19d8
+COMMENT: OM IF-21 대체. 의미 변경 — scene description → pass/fail 판정.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+
+[ICD]
+UID: ICD-71
+TITLE: VLM API (vlm_node → Cloud)
+COMM_TYPE: HTTPS
+SOURCE: vlm_node
+TARGET: VLM API
+MSG_TYPE: REST API (TBD)
+QOS: N/A
+FREQUENCY: On-demand
+STATUS: 시작 전
+STATEMENT: >>>
+``image`` + ``prompt`` → ``verdict(pass/fail)``. 모델 및 엔드포인트 TBD.
+<<<
+PRECONDITION: API key + 네트워크
+NOTION_URL: https://app.notion.com/3b6b39de7dd78121bcdaeec95ad15415
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 모니터링 및 디스플레이
+
+[ICD]
+UID: ICD-62
+TITLE: Camera Color (ext-sensor → PC)
+COMM_TYPE: DDS Topic
+SOURCE: ext-sensor-io
+TARGET: vlm_node
+TOPIC: rt/kist/camera/<name>/color/h264
+MSG_TYPE: kist_msgs (H.264 color frame)
+QOS: BestEffort
+FREQUENCY: 30 Hz
+STATUS: 진행 중
+STATEMENT: >>>
+H.264 NAL + ``seq`` / ``stamp`` / ``width`` / ``height`` / ``keyframe``.
+
+소비처: vlm_node, gui_bridge_node. (VLA 소비는 planned)
+<<<
+PRECONDITION: ext-sensor tx(카메라) 활성
+NOTION_URL: https://app.notion.com/393b39de7dd7816cb052d988331dcca3
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-42
+  ROLE: Implements
+- TYPE: Parent
+  VALUE: SYS-REQ-41
+  ROLE: Implements
+
+[ICD]
+UID: ICD-67
+TITLE: Task Status (orchestrator → gui_bridge)
+COMM_TYPE: DDS Topic
+SOURCE: orchestrator_node
+TARGET: gui_bridge_node
+TOPIC: /cortex/task_status
+MSG_TYPE: cortex_msgs/TaskStatus
+QOS: Reliable
+FREQUENCY: 상태 변화 시
+STATUS: 진행 중
+STATEMENT: >>>
+``header`` + ``task_name`` + ``current_subtask`` + ``subtask_index`` (0-based)
++ ``subtask_count`` + ``state`` (IDLE / RUNNING / SUCCEEDED / FAILED / PREEMPTED) + ``detail``.
+
+open-loop 상태머신에서는 IDLE ↔ RUNNING 만 사용한다.
+<<<
+PRECONDITION: orchestrator 실행 중
+NOTION_URL: https://app.notion.com/3a9b39de7dd781989cf4d5865be70b14
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-41
+  ROLE: Implements
+
+[ICD]
+UID: ICD-55
+TITLE: GUI Status + Frame Stream (gui_bridge → Display Renderer)
+COMM_TYPE: WebSocket
+SOURCE: gui_bridge_node
+TARGET: Display Renderer
+TOPIC: ws://<cortex-host>:8081
+MSG_TYPE: text = JSON status / binary = camera JPEG bytes
+QOS: N/A
+FREQUENCY: ~15 Hz
+STATUS: 시작 전
+STATEMENT: >>>
+**text (JSON):**
+``{scenario: str|null, subtask: {name: str, i: int, n: int}|null, state: 'idle|active|success|failed'}``
+
+**binary:** 최신 카메라 JPEG bytes (첫 프레임 전에는 생략).
+
+매 tick 마다 각 client는 text → binary 순으로 수신한다.
+latest-wins 백프레셔: 이전 broadcast 미완료 시 프레임을 drop 하고,
+``send_timeout_s`` 초과 client는 연결을 끊는다.
+<<<
+PRECONDITION: >>>
+gui_bridge_node 가 ``/cortex/task_status`` 와 ``/bridge/sensors/color/compressed`` 를 구독하여
+WebSocket으로 재발행한다. 브라우저 Display Renderer(kist-drl-g1-gui, app.js)는 무수정이며
+``?ws=`` 쿼리만 cortex 호스트로 재지정한다. ROS 비의존, 단일 LAN, e2e ≤ 200 ms.
+<<<
+NOTION_URL: https://app.notion.com/377b39de7dd781a2b2f7c388c2e2b696
+COMMENT: 2026-06-06 de-scope — estop / STT / TTS 필드 제외.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-41
+  ROLE: Implements
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 저수준 제어 및 안전
+
+[ICD]
+UID: ICD-50
+TITLE: LowCmd (gearsonic → G1)
+COMM_TYPE: DDS Topic
+SOURCE: gearsonic
+TARGET: G1
+TOPIC: rt/lowcmd
+MSG_TYPE: unitree_hg/LowCmd (raw DDS)
+QOS: Reliable
+FREQUENCY: 500 Hz
+STATUS: 완료
+STATEMENT: >>>
+``MotorCommand × 29``: ``q_target``, ``dq_target``, ``kp``, ``kd``, ``tau_ff``. CRC32 검증.
+<<<
+PRECONDITION: gearsonic WBC 활성 + E-STOP 미발효
+NOTION_URL: https://app.notion.com/36bb39de7dd7814995acd11c34d42c66
+COMMENT: >>>
+E-STOP 발효 시 본 인터페이스의 발행이 차단되어야 하므로 ``SYS-REQ-35`` 를 함께 구현한다.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-35
+  ROLE: Implements
+- TYPE: Parent
+  VALUE: SYS-REQ-32
+  ROLE: Implements
+
+[[/SECTION]]

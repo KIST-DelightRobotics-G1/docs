@@ -1,0 +1,157 @@
+[DOCUMENT]
+TITLE: KIST DRL G1 검증 계획 (TEST CASE)
+UID: DOC-TEST
+VERSION: 0.1-demo
+DATE: 2026-08-30
+CLASSIFICATION: Internal
+OPTIONS:
+  MARKUP: RST
+  AUTO_LEVELS: On
+  NODE_IN_TOC: True
+
+[GRAMMAR]
+IMPORT_FROM_FILE: kist_g1.sgra
+
+[TEXT]
+STATEMENT: >>>
+.. warning::
+
+   **본 문서의 내용은 데모용 예시이며 Notion에 대응 원본이 없다.**
+
+   현재 Task / Test 항목은 GitHub Projects에서 관리되고 있으므로, 본 문서는 StrictDoc이
+   요구사항 ↔ 검증 항목의 추적성을 어떻게 표현하는지 보이기 위해 작성한 **가상 예시** 이다.
+   실제 도입 시에는 GitHub Projects의 Test 항목을 이 형식으로 옮기거나,
+   본 문서를 삭제하고 요구사항·인터페이스 2개 층만 운용할 수 있다.
+
+각 테스트 케이스는 ``Verifies`` 관계로 상위 시스템 요구사항에 연결된다.
+이 연결이 있어야 **DEEP-TRACE** 화면에서 "요구사항 → 인터페이스 → 코드 → 검증" 의
+전체 체인이 한 화면에 나타난다.
+<<<
+
+[[SECTION]]
+TITLE: 음성 인터랙션 검증
+
+[TEST_CASE]
+UID: TC-001
+TITLE: 한국어 음성 명령 인식 정확도
+METHOD: Test
+STATUS: 시작 전
+STATEMENT: >>>
+1. 정숙 환경(배경소음 < 40 dBA)에서 사전 정의 트리거 문장 50개를 발화한다.
+2. ``/cortex/stt/transcript`` 를 구독하여 is_final 문장을 수집한다.
+3. 원문 대비 문자 단위 정확도(CER)를 산출한다.
+<<<
+EXPECTED: >>>
+트리거 키워드 매칭 성공률 ≥ 95 %, 평균 CER ≤ 10 %.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-27
+  ROLE: Verifies
+
+[TEST_CASE]
+UID: TC-002
+TITLE: TTS 재생 중 에코 캔슬
+METHOD: Test
+STATUS: 시작 전
+STATEMENT: >>>
+1. orchestrator가 ``/cortex/tts/say`` 로 30초 분량 문장을 발사한다.
+2. 스피커 재생 중 ``SpeakerState.playing == true`` 임을 확인한다.
+3. 재생 구간 동안 ``/cortex/stt/transcript`` 발행 여부를 관측한다.
+<<<
+EXPECTED: >>>
+``playing == true`` 구간에서 transcript가 1건도 발행되지 않는다
+(로봇 자체 음성이 인식되지 않는다).
+<<<
+COMMENT: ICD-42(Speaker State) 미구현 상태에서는 본 테스트가 실패해야 정상이다.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-27
+  ROLE: Verifies
+
+[TEST_CASE]
+UID: TC-003
+TITLE: 음성 응답 end-to-end 지연
+METHOD: Test
+STATUS: 시작 전
+STATEMENT: >>>
+1. ``/cortex/tts/say`` 발행 시각 t0를 기록한다.
+2. 스피커 출력 첫 샘플 시각 t1을 마이크 루프백으로 측정한다.
+3. 20회 반복하여 t1 - t0 의 분포를 산출한다.
+<<<
+EXPECTED: >>>
+중앙값 ≤ 1.5 s, 95 퍼센타일 ≤ 2.5 s.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-29
+  ROLE: Verifies
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 시나리오 및 모니터링 검증
+
+[TEST_CASE]
+UID: TC-004
+TITLE: 냉장고 시나리오 sub-task 순차 실행
+METHOD: Test
+STATUS: 시작 전
+STATEMENT: >>>
+1. 냉장고 시나리오를 로드하고 음성 키워드로 트리거한다.
+2. ``/cortex/task_status`` 를 구독하여 ``subtask_index`` 전이를 기록한다.
+3. 각 전이 직전 ``/cortex/critic/verdict`` 의 ``passed`` 값을 확인한다.
+<<<
+EXPECTED: >>>
+``subtask_index`` 는 0 → 1 → ... → n-1 로 단조 증가하며,
+모든 전이 직전에 해당 subtask에 대한 ``passed == true`` verdict가 선행한다.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Verifies
+
+[TEST_CASE]
+UID: TC-005
+TITLE: GUI 스트리밍 end-to-end 지연
+METHOD: Test
+STATUS: 시작 전
+STATEMENT: >>>
+1. 카메라 앞에 밀리초 타이머 디스플레이를 배치한다.
+2. 브라우저 Display Renderer 화면을 동일 프레임에 함께 촬영한다.
+3. 타이머 값 차이로 e2e 지연을 산출한다. 30회 반복.
+<<<
+EXPECTED: >>>
+평균 e2e 지연 ≤ 200 ms, 프레임 레이트 ≥ 12 Hz.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-41
+  ROLE: Verifies
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 안전 검증
+
+[TEST_CASE]
+UID: TC-006
+TITLE: 관절 한계 초과 시 E-STOP 응답 시간
+METHOD: Test
+STATUS: 시작 전
+STATEMENT: >>>
+1. 테스트 지그에서 관절 한계를 초과하는 목표값을 주입한다.
+2. 주입 시각 t0와 ``rt/lowcmd`` 발행 중단 시각 t1을 로깅한다.
+3. 100회 반복하여 최악값을 산출한다.
+<<<
+EXPECTED: >>>
+최악 응답 시간 ≤ 100 ms. 기능 제어 레이어를 강제 정지시킨 상태에서도 동일하게 동작한다
+(독립성 확인).
+<<<
+COMMENT: ISO 13482 기반. 안전 독립성 확인이 본 테스트의 핵심이다.
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-35
+  ROLE: Verifies
+
+[[/SECTION]]

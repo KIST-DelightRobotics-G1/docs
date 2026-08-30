@@ -1,0 +1,97 @@
+# 요구사항 사이트 빌드 및 GitHub Pages 배포.
+#
+# 이 레포는 공개(public)를 전제로 한다. 따라서 CI는 비공개 개발 레포를
+# 일절 체크아웃하지 않는다.
+#
+#   - 공개 레포의 workflow 아티팩트는 누구나 다운로드할 수 있다.
+#   - REQUIREMENT_TO_SOURCE_TRACEABILITY 를 켜면 스캔한 소스가 전문 그대로
+#     _source_files/**.html 로 사이트에 실린다.
+#
+# 두 가지가 겹치면 비공개 소스가 공개된다. 그래서 CI는 SDOC_PROFILE=public
+# 으로만 빌드한다. 소스 커버리지가 필요하면 사내에서 로컬로 빌드한다.
+#
+#     python tools/fetch_sources.py
+#     strictdoc export . --output-dir output      # SDOC_PROFILE 기본값 = internal
+#
+# 주의: 이 워크플로는 실제로 실행해 본 적이 없다. Pages 설정 후 조정할 것.
+
+name: requirements-docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: requirements-docs
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install StrictDoc
+        run: pip install -r requirements.txt
+
+      # 아키텍처 다이어그램이 ICD와 어긋나면 실패
+      - name: Check generated architecture is up to date
+        run: python tools/gen_arch.py --check
+
+      # 이 레포 안의 데모 스텁 마커만 검증한다.
+      # 개발 레포의 마커는 각 레포 CI가 검증한다 (tools/dev-repo-workflow.example.yml).
+      - name: Validate @relation markers
+        run: python tools/check_markers.py --scan src/
+
+      # export 자체가 검증기다. 문법 위반·끊어진 UID 참조는 여기서 실패한다.
+      # SDOC_PROFILE=public 이면 소스 스캔과 _source_files 생성이 꺼진다.
+      - name: Build documentation (public profile)
+        env:
+          SDOC_PROFILE: public
+        run: strictdoc export . --output-dir output
+
+      # 비공개 소스가 섞여 들어가지 않았는지 마지막으로 확인한다.
+      # 실수로 프로파일이 바뀌면 여기서 배포를 막는다.
+      - name: Guard — no source code in published site
+        run: |
+          if [ -d output/html/_source_files ]; then
+            echo "::error::_source_files/ 가 생성되었습니다. 공개 빌드에 소스가 포함됩니다."
+            exit 1
+          fi
+          echo "ok: 게시물에 소스 파일 페이지가 없습니다."
+
+      # 개발 레포들이 마커 검증에 쓰는 유효 UID 목록.
+      # 사이트가 공개이므로 그냥 URL로 받아갈 수 있다.
+      - name: Export UID list
+        run: python tools/check_markers.py --export-uids output/html/uids.txt
+
+      # StrictDoc 결과물은 _static/ (CSS·JS·mermaid.min.js 88개 파일)을 쓴다.
+      # Jekyll은 언더스코어로 시작하는 디렉터리를 빌드에서 제외하므로,
+      # 혹시라도 브랜치 배포 방식으로 바뀌면 사이트가 통째로 깨진다.
+      # GitHub Actions 방식에서는 Jekyll이 돌지 않지만 보험으로 남긴다.
+      - name: Disable Jekyll processing
+        run: touch output/html/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: output/html
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

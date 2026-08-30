@@ -1,0 +1,204 @@
+[DOCUMENT]
+TITLE: KIST DRL G1 시스템 요구사항 (SYS-REQ)
+UID: DOC-SYS-REQ
+VERSION: 0.1-demo
+DATE: 2026-08-30
+CLASSIFICATION: Internal
+ROOT: True
+OPTIONS:
+  MARKUP: RST
+  AUTO_LEVELS: On
+  NODE_IN_TOC: True
+
+[GRAMMAR]
+IMPORT_FROM_FILE: kist_g1.sgra
+
+[TEXT]
+STATEMENT: >>>
+본 문서는 KAPEX-G1 협업 시연 시스템의 **시스템 요구사항(SYS-REQ)** 을 정의한다.
+
+본 데모 문서는 Notion ``SYS-REQ`` 데이터베이스에서 **음성 인터랙션 · 시나리오 실행 · 안전 · 플랫폼** 에
+해당하는 7건을 발췌하여 StrictDoc 형식으로 옮긴 것이다. 각 노드의 ``Notion 원본`` 필드에서
+원본 레코드로 이동할 수 있다.
+
+.. note::
+
+   Notion DB에는 요구사항 서술문(statement) 필드가 없고 *요구사항명* 과 *수용 기준* 만 존재한다.
+   본 문서의 ``요구사항 서술`` 필드는 수용 기준을 근거로 "~하여야 한다" 형식으로 정형화한 것이며,
+   ``수용 기준`` 필드는 Notion 원문을 그대로 유지하였다.
+<<<
+
+[[SECTION]]
+TITLE: 음성 인터랙션
+
+[TEXT]
+STATEMENT: >>>
+사용자 및 KAPEX 작업자와 로봇 사이의 음성 기반 양방향 상호작용에 대한 요구사항이다.
+STT(인식) 경로와 TTS(응답) 경로를 포함하며, 두 경로가 동시에 활성화될 때 발생하는
+자체 음성 오인식(에코) 문제를 다룬다.
+<<<
+
+[SYS_REQ]
+UID: SYS-REQ-27
+TITLE: 음성 명령 인식 및 텍스트 변환
+CATEGORY: FR
+MODULE: Perception
+PRIORITY: P0
+STATUS: 진행 중
+STATEMENT: >>>
+시스템은 사용자 및 KAPEX 작업자의 음성을 실시간으로 인식하여 텍스트로 변환하고,
+그 결과를 상위 판단 모듈(orchestrator)에 전달하여야 한다.
+
+시스템은 로봇이 음성을 재생하는 동안 자체 음성이 입력으로 인식되지 않도록
+마이크 입력을 차단(에코 캔슬)하여야 한다.
+<<<
+ACCEPTANCE: >>>
+사용자·KAPEX의 음성을 실시간으로 인식하여 텍스트로 변환하고 상위 판단 모듈에 전달한다.
+로봇이 음성을 재생하는 동안에는 자체 음성 오인식을 방지한다(에코 캔슬).
+<<<
+NOTION_URL: https://app.notion.com/358b39de7dd78182b28dc62e858810cf
+
+[SYS_REQ]
+UID: SYS-REQ-29
+TITLE: 음성 응답 출력
+CATEGORY: FR
+MODULE: Control
+PRIORITY: P0
+STATUS: 진행 중
+STATEMENT: >>>
+시스템은 주어진 텍스트를 한국어 음성으로 합성하여 로봇 스피커로 출력하여야 한다.
+
+시스템은 음성 재생 중 음성 입력 인식을 차단하여야 하며, 상위 모듈의 중단(barge-in) 요청 시
+진행 중인 합성 작업을 취소할 수 있어야 한다.
+<<<
+ACCEPTANCE: >>>
+주어진 텍스트를 한국어 음성으로 합성하여 로봇 스피커로 출력한다.
+재생 중에는 음성 입력 인식을 차단한다.
+<<<
+NOTION_URL: https://app.notion.com/358b39de7dd781b3a06ef8a92eff0373
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 시나리오 실행 및 판정
+
+[SYS_REQ]
+UID: SYS-REQ-44
+TITLE: 사전 정의 sub-task 시퀀스 실행 및 성공 판정
+CATEGORY: FR
+MODULE: Planning
+PRIORITY: P0
+STATUS: 완료
+STATEMENT: >>>
+시스템은 사전 정의된 시나리오를 로드·검증하고, 음성 키워드로 트리거하여
+sub-task를 순차적으로 실행하여야 한다.
+
+시스템은 각 sub-task의 완료 여부를 시나리오에 정의된 성공 기준으로 판정하고,
+판정이 성공인 경우에만 다음 단계로 진행하여야 한다.
+<<<
+ACCEPTANCE: >>>
+사전 정의된 시나리오를 로드·검증하고 음성 키워드로 트리거하여 sub-task를 순차 실행한다.
+각 sub-task는 시나리오에 정의된 다형적 성공 기준으로 판정하고 다음 단계로 진행한다.
+시연 시나리오(냉장고)는 각 단계 성공을 VLM 씬 판정으로 확인하며,
+음성 키워드·센서(UWB/joint) 기준도 선택 가능하다.
+<<<
+NOTION_URL: https://app.notion.com/369b39de7dd781cf82a0d49f7bb89ac1
+
+[SYS_REQ]
+UID: SYS-REQ-41
+TITLE: 로봇 상태 실시간 모니터링 GUI
+CATEGORY: FR
+MODULE: System
+PRIORITY: P1
+STATUS: 진행 중
+STATEMENT: >>>
+시스템은 로봇의 상태(시나리오·sub-task 진행 상황)와 최신 카메라 영상을
+외부 디스플레이로 실시간 스트리밍하여야 한다.
+
+end-to-end 지연은 200 ms 이하여야 한다. 영상 합성 및 렌더링은 별도 디스플레이 앱이 담당한다.
+<<<
+ACCEPTANCE: >>>
+로봇의 상태(시나리오·sub-task 진행·상태)와 최신 카메라 영상을 실시간으로 외부 디스플레이에
+스트리밍한다. 합성·렌더링은 별도 디스플레이 앱이 담당하며 end-to-end 지연은
+목표치(예: 200ms) 이하.
+<<<
+NOTION_URL: https://app.notion.com/35bb39de7dd781738507e9e0928f0fee
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 안전
+
+[TEXT]
+STATEMENT: >>>
+ISO 13482(개인 지원 로봇 안전) 기반의 안전 요구사항이다.
+안전 기능은 기능 제어 레이어와 **독립적으로** 동작하여야 한다는 점이 핵심 제약이다.
+<<<
+
+[SYS_REQ]
+UID: SYS-REQ-35
+TITLE: 관절 명령 이상 감지 및 긴급 정지
+CATEGORY: SR
+MODULE: Safety
+PRIORITY: P0
+STATUS: 시작 전
+STANDARD: ISO 13482
+STATEMENT: >>>
+시스템은 관절 한계 초과, 급격한 명령 변화 등 관절 명령의 이상을 감지하여야 한다.
+
+이상이 감지된 경우 시스템은 정해진 시간 내에 긴급정지(E-STOP)를 발효하여야 하며,
+이 기능은 기능 제어 레이어와 독립적으로 동작하여야 한다.
+<<<
+ACCEPTANCE: >>>
+관절 한계 초과나 급격한 명령 변화 등 이상을 감지하면 정해진 시간 내에 긴급정지(E-STOP)를
+발효한다. 기능 제어 레이어와 독립적으로 동작한다.
+<<<
+NOTION_URL: https://app.notion.com/358b39de7dd78159be19c270534fd5e3
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 플랫폼 및 인프라
+
+[SYS_REQ]
+UID: SYS-REQ-42
+TITLE: 센서 데이터 수집 및 PC 전달
+CATEGORY: FR
+MODULE: HAL
+PRIORITY: P0
+STATUS: 진행 중
+STATEMENT: >>>
+시스템은 카메라(RGB+Depth), 위치(UWB), 마이크 센서 데이터를 실시간으로 수집하여
+PC로 전달하여야 한다. 카메라 데이터는 압축하여 전송하여야 한다.
+<<<
+ACCEPTANCE: >>>
+카메라(RGB+Depth), 위치(UWB), 마이크 센서 데이터를 실시간으로 수집하여 PC로 전달한다.
+카메라는 압축 전송한다.
+<<<
+NOTION_URL: https://app.notion.com/35bb39de7dd7817da085ecabe30f3cb7
+
+[SYS_REQ]
+UID: SYS-REQ-32
+TITLE: PC↔로봇 양방향 데이터 통신
+CATEGORY: FR
+MODULE: Middleware
+PRIORITY: P0
+STATUS: 진행 중
+STATEMENT: >>>
+시스템은 PC의 명령 출력을 로봇으로, 로봇의 센서·상태 데이터를 PC로
+양방향 실시간 전달하여야 한다.
+
+유선 LAN 기반 20 Hz 이상 주기로 안정 동작하여야 하며, 왕복 지연은 5 ms 이하여야 한다.
+<<<
+ACCEPTANCE: >>>
+PC의 명령 출력이 로봇으로, 로봇의 센서·상태 데이터가 PC로 양방향 실시간 전달된다.
+유선 LAN 기반 20Hz 이상 주기로 안정 동작하며, 왕복 지연은 목표치(예: 5ms 이하)를 만족한다.
+(구 REQ-33 통신 성능 통합)
+<<<
+NOTION_URL: https://app.notion.com/358b39de7dd7816697b0dc9c7da7fbb0
+COMMENT: >>>
+**데모 주의:** 본 요구사항에는 의도적으로 구현 코드(``@relation`` 마커)를 연결하지 않았다.
+StrictDoc의 소스 커버리지 화면이 미구현 요구사항을 어떻게 검출하는지 보이기 위한 것이다.
+<<<
+
+[[/SECTION]]

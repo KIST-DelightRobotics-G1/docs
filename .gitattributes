@@ -1,0 +1,10 @@
+# 저장소에는 항상 LF로 보관한다.
+# Windows에서 작업하더라도 CI(Linux)에서 워크플로의 셸 블록이 CR 때문에
+# 깨지지 않도록 하기 위함이다.
+* text=auto eol=lf
+
+# 바이너리로 다뤄야 하는 것들
+*.png binary
+*.jpg binary
+*.pdf binary
+*.svg text eol=lf

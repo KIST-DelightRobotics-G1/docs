@@ -1,0 +1,175 @@
+[GRAMMAR]
+ELEMENTS:
+- TAG: SECTION
+  PROPERTIES:
+    IS_COMPOSITE: True
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: False
+  - TITLE: LEVEL
+    TYPE: String
+    REQUIRED: False
+  - TITLE: PREFIX
+    TYPE: String
+    REQUIRED: False
+  - TITLE: TITLE
+    TYPE: String
+    REQUIRED: True
+- TAG: TEXT
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: False
+  - TITLE: STATEMENT
+    TYPE: String
+    REQUIRED: True
+- TAG: SYS_REQ
+  PROPERTIES:
+    PREFIX: SYS-REQ-
+    VIEW_STYLE: Table
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: True
+  - TITLE: TITLE
+    HUMAN_TITLE: 요구사항명
+    TYPE: String
+    REQUIRED: True
+  - TITLE: CATEGORY
+    HUMAN_TITLE: 분류
+    TYPE: SingleChoice(FR, NFR, SR)
+    REQUIRED: True
+  - TITLE: MODULE
+    HUMAN_TITLE: 모듈
+    TYPE: MultipleChoice(Perception, Planning, Control, Safety, HAL, Middleware, System)
+    REQUIRED: True
+  - TITLE: PRIORITY
+    HUMAN_TITLE: 우선순위
+    TYPE: SingleChoice(P0, P1, P2)
+    REQUIRED: True
+  - TITLE: STATUS
+    HUMAN_TITLE: 상태
+    TYPE: SingleChoice(시작 전, 진행 중, 완료)
+    REQUIRED: True
+  - TITLE: STANDARD
+    HUMAN_TITLE: 관련 표준
+    TYPE: MultipleChoice(ISO 13482, ISO 10218, ISO 26262, IEC 61508, ROS REP)
+    REQUIRED: False
+  - TITLE: STATEMENT
+    HUMAN_TITLE: 요구사항 서술
+    TYPE: String
+    REQUIRED: True
+  - TITLE: ACCEPTANCE
+    HUMAN_TITLE: 수용 기준
+    TYPE: String
+    REQUIRED: True
+  - TITLE: NOTION_URL
+    HUMAN_TITLE: Notion 원본
+    TYPE: String
+    REQUIRED: False
+  - TITLE: COMMENT
+    HUMAN_TITLE: 비고
+    TYPE: String
+    REQUIRED: False
+  RELATIONS:
+  - TYPE: File
+- TAG: ICD
+  PROPERTIES:
+    PREFIX: ICD-
+    VIEW_STYLE: Table
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: True
+  - TITLE: TITLE
+    HUMAN_TITLE: 인터페이스명
+    TYPE: String
+    REQUIRED: True
+  - TITLE: COMM_TYPE
+    HUMAN_TITLE: 통신 방식
+    TYPE: SingleChoice(DDS Topic, SHM, Getter, Call, gRPC, HTTPS, WebSocket)
+    REQUIRED: True
+  - TITLE: SOURCE
+    HUMAN_TITLE: 송신 컨테이너
+    TYPE: SingleChoice(G1, gearsonic, ext-sensor-io, nav-planner, Cortex, stt_node, vlm_node, orchestrator_node, tts_node, gui_bridge_node, speaker_node, Google Cloud STT, Naver CLOVA TTS, VLM API)
+    REQUIRED: True
+  - TITLE: TARGET
+    HUMAN_TITLE: 수신 컨테이너
+    TYPE: SingleChoice(G1, gearsonic, ext-sensor-io, nav-planner, Cortex, stt_node, vlm_node, orchestrator_node, tts_node, gui_bridge_node, speaker_node, Google Cloud STT, Naver CLOVA TTS, VLM API, Display Renderer)
+    REQUIRED: True
+  - TITLE: TOPIC
+    HUMAN_TITLE: 토픽 / 엔드포인트
+    TYPE: String
+    REQUIRED: False
+  - TITLE: MSG_TYPE
+    HUMAN_TITLE: 메시지 타입
+    TYPE: String
+    REQUIRED: True
+  - TITLE: QOS
+    HUMAN_TITLE: QoS
+    TYPE: SingleChoice(Reliable, BestEffort, N/A)
+    REQUIRED: True
+  - TITLE: FREQUENCY
+    HUMAN_TITLE: 발행 주기
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATUS
+    HUMAN_TITLE: 상태
+    TYPE: SingleChoice(시작 전, 진행 중, 완료)
+    REQUIRED: True
+  - TITLE: STATEMENT
+    HUMAN_TITLE: 필드 정의
+    TYPE: String
+    REQUIRED: True
+  - TITLE: PRECONDITION
+    HUMAN_TITLE: 전제조건
+    TYPE: String
+    REQUIRED: True
+  - TITLE: NOTION_URL
+    HUMAN_TITLE: Notion 원본
+    TYPE: String
+    REQUIRED: False
+  - TITLE: COMMENT
+    HUMAN_TITLE: 비고
+    TYPE: String
+    REQUIRED: False
+  RELATIONS:
+  - TYPE: Parent
+    ROLE: Implements
+  - TYPE: File
+- TAG: TEST_CASE
+  PROPERTIES:
+    PREFIX: TC-
+    VIEW_STYLE: Table
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: True
+  - TITLE: TITLE
+    HUMAN_TITLE: 테스트명
+    TYPE: String
+    REQUIRED: True
+  - TITLE: METHOD
+    HUMAN_TITLE: 검증 방법
+    TYPE: SingleChoice(Test, Analysis, Inspection, Review)
+    REQUIRED: True
+  - TITLE: STATUS
+    HUMAN_TITLE: 상태
+    TYPE: SingleChoice(시작 전, 진행 중, 완료)
+    REQUIRED: True
+  - TITLE: STATEMENT
+    HUMAN_TITLE: 절차
+    TYPE: String
+    REQUIRED: True
+  - TITLE: EXPECTED
+    HUMAN_TITLE: 기대 결과
+    TYPE: String
+    REQUIRED: True
+  - TITLE: COMMENT
+    HUMAN_TITLE: 비고
+    TYPE: String
+    REQUIRED: False
+  RELATIONS:
+  - TYPE: Parent
+    ROLE: Verifies
