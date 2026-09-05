@@ -1,8 +1,8 @@
 [DOCUMENT]
 TITLE: KIST DRL G1 시스템 요구사항 (SYS-REQ)
 UID: DOC-SYS-REQ
-VERSION: 0.1
-DATE: 2026-09-05
+VERSION: 0.2
+DATE: 2026-09-06
 CLASSIFICATION: Internal
 ROOT: True
 OPTIONS:
@@ -23,8 +23,8 @@ STATEMENT: >>>
 
 .. note::
 
-   본 문서는 Notion ``SYS-REQ`` 데이터베이스를 이관한 것이며, 이관 이후 Notion은 폐기되어
-   본 레포지토리가 유일한 원본(SSOT)이다.
+   본 문서는 Notion ``SYS-REQ`` 데이터베이스(14건)를 이관한 것이며, 이관 이후 Notion은 폐기되어
+   본 레포지토리가 유일한 원본(SSOT)이다. UID 번호는 Notion 시절 ID를 그대로 잇는다.
 <<<
 
 [[SECTION]]
@@ -55,7 +55,6 @@ ACCEPTANCE: >>>
 사용자·KAPEX의 음성을 실시간으로 인식하여 텍스트로 변환하고 상위 판단 모듈에 전달한다.
 로봇이 음성을 재생하는 동안에는 자체 음성 오인식을 방지한다(에코 캔슬).
 <<<
-NOTION_URL: https://app.notion.com/358b39de7dd78182b28dc62e858810cf
 
 [SYS_REQ]
 UID: SYS-REQ-29
@@ -74,12 +73,17 @@ ACCEPTANCE: >>>
 주어진 텍스트를 한국어 음성으로 합성하여 로봇 스피커로 출력한다.
 재생 중에는 음성 입력 인식을 차단한다.
 <<<
-NOTION_URL: https://app.notion.com/358b39de7dd781b3a06ef8a92eff0373
 
 [[/SECTION]]
 
 [[SECTION]]
 TITLE: 시나리오 실행 및 판정
+
+[TEXT]
+STATEMENT: >>>
+발화로 트리거된 시나리오를 sub-task 단위로 실행하고, 각 단계의 성공을 판정하여
+다음 단계로 진행하는 오케스트레이션 요구사항이다.
+<<<
 
 [SYS_REQ]
 UID: SYS-REQ-44
@@ -101,27 +105,142 @@ ACCEPTANCE: >>>
 시연 시나리오(냉장고)는 각 단계 성공을 VLM 씬 판정으로 확인하며,
 음성 키워드·센서(UWB/joint) 기준도 선택 가능하다.
 <<<
-NOTION_URL: https://app.notion.com/369b39de7dd781cf82a0d49f7bb89ac1
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 동작 생성 (VLA)
+
+[TEXT]
+STATEMENT: >>>
+언어 명령과 장면·관절 상태로부터 전신 조작 동작을 생성하는 정책 추론 경로의 요구사항이다.
+추론 서빙(프로세스 분리)과 균형 보정(제어 계층)을 포함한다.
+<<<
 
 [SYS_REQ]
-UID: SYS-REQ-41
-TITLE: 로봇 상태 실시간 모니터링 GUI
+UID: SYS-REQ-31
+TITLE: 카메라+관절 상태 기반 전신 조작 동작 생성
 CATEGORY: FR
-MODULE: System
-PRIORITY: P1
-STATUS: 진행 중
+MODULE: Control
+PRIORITY: P0
+STATUS: 시작 전
 STATEMENT: >>>
-시스템은 로봇의 상태(시나리오·sub-task 진행 상황)와 최신 카메라 영상을
-외부 디스플레이로 실시간 스트리밍하여야 한다.
+시스템은 언어 명령, 카메라 영상, 로봇 관절 상태를 입력으로 전신(상체+하체) 조작 동작을
+실시간으로 생성하여 제어 계층에 전달하여야 한다.
 
-end-to-end 지연은 200 ms 이하여야 한다. 영상 합성 및 렌더링은 별도 디스플레이 앱이 담당한다.
+동작은 고정 주기의 연속 스트림으로 제공되어야 하며, 새로운 언어 명령이 주어지면
+이후 생성되는 동작은 최신 명령을 반영하여야 한다.
 <<<
 ACCEPTANCE: >>>
-로봇의 상태(시나리오·sub-task 진행·상태)와 최신 카메라 영상을 실시간으로 외부 디스플레이에
-스트리밍한다. 합성·렌더링은 별도 디스플레이 앱이 담당하며 end-to-end 지연은
-목표치(예: 200ms) 이하.
+언어 명령과 카메라 영상, 로봇 관절 상태를 입력으로 전신(상체+하체) 동작을 실시간으로 생성하여
+제어에 전달한다.
 <<<
-NOTION_URL: https://app.notion.com/35bb39de7dd781738507e9e0928f0fee
+
+[SYS_REQ]
+UID: SYS-REQ-39
+TITLE: 동작 생성 정책 추론 서빙
+CATEGORY: FR
+MODULE: Middleware
+PRIORITY: P0
+STATUS: 시작 전
+STATEMENT: >>>
+시스템은 GPU 상에서 동작 생성 정책 모델을 실시간으로 추론·서빙하여 동작 명령을
+응답하여야 한다.
+
+추론은 저수준 제어와 독립된 프로세스로 분리되어야 하며, 추론 지연이나 추론 프로세스의
+중단이 제어 주기에 영향을 주지 않아야 한다.
+<<<
+ACCEPTANCE: >>>
+GPU 상에서 동작 생성 정책 모델을 실시간으로 추론·서빙하여 동작 명령을 응답한다.
+추론은 제어와 독립 프로세스로 분리한다.
+<<<
+
+[SYS_REQ]
+UID: SYS-REQ-43
+TITLE: VLA 출력 balance 보정 (GearSonic)
+CATEGORY: FR
+MODULE: Control
+PRIORITY: P0
+STATUS: 시작 전
+STATEMENT: >>>
+시스템은 동작 생성 정책이 출력한 관절 동작 목표를 로봇의 균형을 고려하여 보정한
+관절 목표로 변환하여 출력하여야 한다.
+
+보정은 정책 출력의 의도(자세·궤적)를 유지하면서 로봇이 넘어지지 않도록 하여야 한다.
+<<<
+ACCEPTANCE: >>>
+생성된 관절 동작 목표를 로봇 균형을 고려하여 보정한 관절 목표로 출력한다.
+<<<
+COMMENT: 세부 사양은 KIST와 협의하여 확정한다.
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 이동
+
+[SYS_REQ]
+UID: SYS-REQ-45
+TITLE: 자연어 명령 기반 자율 보행
+CATEGORY: FR
+MODULE: Planning, Control
+PRIORITY: P0
+STATUS: 시작 전
+STATEMENT: >>>
+시스템은 자연어 이동 명령을 받아 목표 지점까지 자율 보행하여야 하며,
+위치·자세 오차 기준으로 목표 도달을 판정하여야 한다.
+
+시스템은 안전 검증을 통과한 이동 명령만 구동에 사용하여야 하며, 실패(timeout·측위 stale 등)
+시 상위 모듈에 명확한 실패 신호를 반환하여야 한다.
+<<<
+ACCEPTANCE: >>>
+자연어 이동 명령을 받아 목표 지점까지 자율 보행하고, 위치·자세 오차 기준으로 도달을 판정한다.
+안전 검증을 통과한 명령만 구동에 사용하며, 실패(timeout·측위 stale 등) 시 상위로 명확한
+실패 신호를 반환한다.
+<<<
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 저수준 제어
+
+[TEXT]
+STATEMENT: >>>
+생성된 동작 명령을 모터에 전달하는 실시간 제어 루프의 기능·성능 요구사항이다.
+<<<
+
+[SYS_REQ]
+UID: SYS-REQ-34
+TITLE: 저수준 관절 명령 연속 모터 제어
+CATEGORY: FR
+MODULE: Control
+PRIORITY: P0
+STATUS: 시작 전
+STATEMENT: >>>
+시스템은 생성된 동작 명령을 정해진 고정 주기로 모터에 연속 전달하여야 한다.
+
+명령(청크) 전환 시 관절 목표는 불연속 없이 부드럽게 이어져야 하며, 상위 명령이 일시적으로
+지연되더라도 마지막 명령을 유지하여 모터 명령 스트림이 끊기지 않아야 한다.
+<<<
+ACCEPTANCE: >>>
+생성된 동작 명령을 정해진 고정 주기로 모터에 연속 전달하며, 명령(청크) 전환 시 부드럽게 이어진다.
+<<<
+
+[SYS_REQ]
+UID: SYS-REQ-38
+TITLE: 저수준 제어 주기 목표 달성
+CATEGORY: NFR
+MODULE: Control, Middleware
+PRIORITY: P0
+STATUS: 시작 전
+STATEMENT: >>>
+저수준 제어 루프는 목표 주기를 99 % 이상의 유지율로 만족하여야 한다.
+
+주기 유지율(지터)은 런타임에 계측 가능하여야 하며, 목표 주기 값은 인터페이스 정의서(ICD)에
+명시한다.
+<<<
+ACCEPTANCE: >>>
+저수준 제어 루프가 목표 주기를 높은 유지율(예: 99% 이상)로 만족한다.
+<<<
 
 [[/SECTION]]
 
@@ -152,7 +271,6 @@ ACCEPTANCE: >>>
 관절 한계 초과나 급격한 명령 변화 등 이상을 감지하면 정해진 시간 내에 긴급정지(E-STOP)를
 발효한다. 기능 제어 레이어와 독립적으로 동작한다.
 <<<
-NOTION_URL: https://app.notion.com/358b39de7dd78159be19c270534fd5e3
 
 [[/SECTION]]
 
@@ -174,7 +292,6 @@ ACCEPTANCE: >>>
 카메라(RGB+Depth), 위치(UWB), 마이크 센서 데이터를 실시간으로 수집하여 PC로 전달한다.
 카메라는 압축 전송한다.
 <<<
-NOTION_URL: https://app.notion.com/35bb39de7dd7817da085ecabe30f3cb7
 
 [SYS_REQ]
 UID: SYS-REQ-32
@@ -194,6 +311,53 @@ PC의 명령 출력이 로봇으로, 로봇의 센서·상태 데이터가 PC로
 유선 LAN 기반 20Hz 이상 주기로 안정 동작하며, 왕복 지연은 목표치(예: 5ms 이하)를 만족한다.
 (구 REQ-33 통신 성능 통합)
 <<<
-NOTION_URL: https://app.notion.com/358b39de7dd7816697b0dc9c7da7fbb0
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 모니터링
+
+[TEXT]
+STATEMENT: >>>
+로봇 상태와 카메라 영상을 외부 디스플레이로 가시화하는 경로의 요구사항이다.
+데이터 발행(GUI 브리지)과 렌더링(브라우저)을 분리한다.
+<<<
+
+[SYS_REQ]
+UID: SYS-REQ-41
+TITLE: 로봇 상태 실시간 모니터링 GUI
+CATEGORY: FR
+MODULE: System
+PRIORITY: P1
+STATUS: 진행 중
+STATEMENT: >>>
+시스템은 로봇의 상태(시나리오·sub-task 진행 상황)와 최신 카메라 영상을
+외부 디스플레이로 실시간 스트리밍하여야 한다.
+
+end-to-end 지연은 200 ms 이하여야 한다. 영상 합성 및 렌더링은 별도 디스플레이 앱이 담당한다.
+<<<
+ACCEPTANCE: >>>
+로봇의 상태(시나리오·sub-task 진행·상태)와 최신 카메라 영상을 실시간으로 외부 디스플레이에
+스트리밍한다. 합성·렌더링은 별도 디스플레이 앱이 담당하며 end-to-end 지연은
+목표치(예: 200ms) 이하.
+<<<
+
+[SYS_REQ]
+UID: SYS-REQ-49
+TITLE: 디스플레이 렌더러 (브라우저)
+CATEGORY: FR
+MODULE: System
+PRIORITY: P2
+STATUS: 완료
+STATEMENT: >>>
+시스템은 GUI가 발행하는 디스플레이 데이터(카메라 영상 + 상태)를 브라우저에서 구독하여
+영상 위에 시나리오·sub-task·상태를 오버레이 표시하여야 한다.
+
+렌더러는 별도 저장소(``cortex-gui``)로 관리되며 ROS에 의존하지 않아야 한다.
+<<<
+ACCEPTANCE: >>>
+GUI가 발행하는 디스플레이 데이터(카메라 영상 + 상태)를 브라우저에서 구독하여 영상 위에
+시나리오·sub-task·상태를 오버레이 표시한다. 별도 repo(cortex-gui), ROS 비의존.
+<<<
 
 [[/SECTION]]

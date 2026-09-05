@@ -64,10 +64,6 @@ ELEMENTS:
     HUMAN_TITLE: 수용 기준
     TYPE: String
     REQUIRED: True
-  - TITLE: NOTION_URL
-    HUMAN_TITLE: Notion 원본
-    TYPE: String
-    REQUIRED: False
   - TITLE: COMMENT
     HUMAN_TITLE: 비고
     TYPE: String
@@ -126,10 +122,6 @@ ELEMENTS:
     HUMAN_TITLE: 전제조건
     TYPE: String
     REQUIRED: True
-  - TITLE: NOTION_URL
-    HUMAN_TITLE: Notion 원본
-    TYPE: String
-    REQUIRED: False
   - TITLE: COMMENT
     HUMAN_TITLE: 비고
     TYPE: String
