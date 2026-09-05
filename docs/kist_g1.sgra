@@ -152,7 +152,7 @@ ELEMENTS:
     REQUIRED: True
   - TITLE: METHOD
     HUMAN_TITLE: 검증 방법
-    TYPE: SingleChoice(Test, Analysis, Inspection, Review)
+    TYPE: SingleChoice(Test, Demonstration, Analysis, Inspection, Review)
     REQUIRED: True
   - TITLE: STATUS
     HUMAN_TITLE: 상태
