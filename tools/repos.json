@@ -1,20 +1,20 @@
 {
   "_comment": [
-    "요구사항 빌드가 @relation 마커를 스캔할 개발 레포 목록.",
+    "File 관계가 가리키는 구현 파일을 빌드 시점에 _src/<name>/ 으로 체크아웃할 개발 레포 목록.",
     "ref를 'main'으로 두면 항상 최신을 본다. 릴리스 시점 스냅샷을 남기려면",
     "커밋 SHA나 태그로 고정한다.",
     "여기서 뺀 레포는 그냥 커버리지에 안 잡힐 뿐, 빌드는 실패하지 않는다."
   ],
-  "org": "Safety-Node",
+  "org": "KIST-DelightRobotics-G1",
   "dest": "_src",
   "repos": [
-    { "name": "kist-drl-g1-cortex",       "ref": "main" },
-    { "name": "kist-gearsonic-inference", "ref": "main" },
-    { "name": "kist-vla-inference",       "ref": "main" },
-    { "name": "kist-ext-sensor-io",       "ref": "main" },
-    { "name": "kist-navigation-planner",  "ref": "main" },
-    { "name": "kist-drl-g1-gui",          "ref": "main" },
-    { "name": "kist-drl-g1-msgs",         "ref": "main" },
-    { "name": "kist-data-collector",      "ref": "main" }
+    { "name": "cortex",              "ref": "main" },
+    { "name": "cortex-gui",          "ref": "main" },
+    { "name": "interface-msgs",      "ref": "main" },
+    { "name": "ext-sensor-io",       "ref": "main" },
+    { "name": "gearsonic-inference", "ref": "main" },
+    { "name": "vla-inference",       "ref": "main" },
+    { "name": "navigation-planner",  "ref": "main" },
+    { "name": "safety-controller",   "ref": "main" }
   ]
 }

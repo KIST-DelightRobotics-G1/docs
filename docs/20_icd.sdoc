@@ -1,8 +1,8 @@
 [DOCUMENT]
 TITLE: KIST DRL G1 인터페이스 정의서 (ICD)
 UID: DOC-ICD
-VERSION: 0.1-demo
-DATE: 2026-08-30
+VERSION: 0.1
+DATE: 2026-09-05
 CLASSIFICATION: Internal
 OPTIONS:
   MARKUP: RST
@@ -16,10 +16,9 @@ IMPORT_FROM_FILE: kist_g1.sgra
 STATEMENT: >>>
 본 문서는 KAPEX-G1 협업 시연 시스템의 컨테이너 간 **인터페이스(ICD)** 를 정의한다.
 
-Notion ``ICD`` 데이터베이스에서 음성 파이프라인 · GUI · 안전 경로에 해당하는 15건을 발췌하였다.
-각 인터페이스는 ``Implements`` 관계로 상위 시스템 요구사항(SYS-REQ)에 연결되어 있으며,
-좌측 상단의 **TRACE / DEEP-TRACE** 화면에서 요구사항 → 인터페이스 → 구현 코드의
-연결을 확인할 수 있다.
+각 인터페이스는 ``Implements`` 관계로 상위 시스템 요구사항(SYS-REQ)에 연결되며,
+``File`` 관계로 구현 파일을 가리킨다. **TRACE / DEEP-TRACE** 화면에서
+요구사항 → 인터페이스 → 구현 파일의 연결을 확인할 수 있다.
 
 .. note::
 
