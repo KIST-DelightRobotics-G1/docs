@@ -141,6 +141,10 @@ def main() -> int:
             # 빠질 뿐 빌드를 깨뜨리지 않는다.
             print(f"  warning: {name} 체크아웃 실패 — 커버리지에서 제외됩니다.")
             failed.append(name)
+        elif not args.dry_run:
+            # 소스 스캔 전용 사본이다. .git 을 지워 StrictDoc이 pack 파일 수천 개를
+            # 훑지 않게 한다 (스캔 디렉터리 3000+ → 300).
+            shutil.rmtree(target / ".git", ignore_errors=True)
 
     print()
     ok = len(repos) - len(failed)

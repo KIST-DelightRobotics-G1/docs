@@ -2,12 +2,13 @@
 #
 # Pages 설정: Settings → Pages → Build and deployment → Source = "GitHub Actions"
 #
-# 현재는 SDOC_PROFILE=public (소스 추적성 제외) 으로 빌드한다. 모든 개발 레포가
-# 공개이므로 소스 포함 빌드로 바꿔도 되며, 그 경우 아래 주석 처리된
-# "Fetch sources" 단계를 살리고 SDOC_PROFILE 을 지운다.
+# 소스 포함 빌드(internal 프로파일)다. tools/fetch_sources.py 가 개발 레포 8개를
+# _src/ 로 받아오고, StrictDoc이 File 관계로 연결된 파일을 Source coverage 로
+# 렌더링한다. 모든 개발 레포가 public 이므로 토큰이 필요 없다.
+# 개발 레포가 비공개로 바뀌면 SDOC_PROFILE=public 으로 되돌린다 (소스 미포함).
 #
-# 검사 정책: 문법 위반·끊어진 UID 참조는 export 자체가 실패한다(도구 특성).
-# 그 외 검사는 경고(continue-on-error)로 둔다.
+# 검사 정책: 문법 위반·끊어진 UID 참조·없는 File 경로는 export 자체가 실패한다
+# (도구 특성). 그 외 검사는 경고(continue-on-error)로 둔다.
 
 name: docs
 
@@ -44,18 +45,16 @@ jobs:
         continue-on-error: true
         run: python tools/gen_arch.py --check
 
-      # 소스 포함 빌드로 전환할 때 활성화
-      # - name: Fetch sources
-      #   run: python tools/fetch_sources.py
+      # File 관계가 가리키는 구현 파일. 한 레포를 못 받아도 빌드는 계속된다.
+      - name: Fetch source repos into _src/
+        run: python tools/fetch_sources.py
 
-      # export 자체가 검증기다. 문법 위반·끊어진 UID 참조는 여기서 실패한다.
-      - name: Build documentation
-        env:
-          SDOC_PROFILE: public
+      # export 자체가 검증기다. 문법 위반·끊어진 UID·없는 File 경로는 여기서 실패한다.
+      - name: Build documentation (with source traceability)
         run: strictdoc export . --output-dir output
 
-      # StrictDoc 결과물은 _static/ 을 쓴다. Jekyll은 언더스코어 디렉터리를 제외하므로
-      # 브랜치 배포 방식으로 바뀌더라도 깨지지 않게 보험으로 남긴다.
+      # StrictDoc 결과물은 _static/ 과 _source_files/ 를 쓴다. Jekyll은 언더스코어
+      # 디렉터리를 제외하므로 보험으로 남긴다.
       - name: Disable Jekyll processing
         run: touch output/html/.nojekyll
 

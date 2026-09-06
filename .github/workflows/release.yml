@@ -1,0 +1,93 @@
+# 마일스톤 릴리스 — 태그(v*)를 push 하면:
+#   1) 직전 태그 대비 요구사항 변경 리포트(Diff / Changelog)를 포함한 사이트를 빌드하고
+#   2) 문서별 PDF 를 만들어
+#   3) GitHub Release 에 site.zip + PDF 를 첨부한다.
+#
+# 수동 실행(workflow_dispatch)도 가능하다 — 태그 없이 현재 커밋 기준으로 산출물만 만든다.
+#
+# PDF 는 StrictDoc html2pdf(html2pdf4doc) 가 Chrome 을 구동해 만든다. ubuntu-latest 러너에
+# Google Chrome 이 기본 설치되어 있다. 실패해도 릴리스는 진행한다(경고).
+
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      previous_ref:
+        description: "Diff 기준 리비전 (예: v0.1). 비우면 직전 태그 자동 탐색"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 태그·이전 리비전 접근용
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install StrictDoc
+        run: pip install -r requirements.txt
+
+      - name: Fetch source repos into _src/
+        run: python tools/fetch_sources.py
+
+      # 직전 태그를 찾는다. 첫 릴리스면 diff 없이 빌드한다.
+      - name: Resolve previous revision
+        id: prev
+        run: |
+          PREV="${{ github.event.inputs.previous_ref }}"
+          if [ -z "$PREV" ]; then
+            PREV=$(git describe --tags --abbrev=0 "${GITHUB_SHA}^" 2>/dev/null || true)
+          fi
+          echo "prev=$PREV" >> "$GITHUB_OUTPUT"
+          echo "previous revision: ${PREV:-(none)}"
+
+      - name: Build site with Diff/Changelog
+        run: |
+          PREV="${{ steps.prev.outputs.prev }}"
+          if [ -n "$PREV" ]; then
+            strictdoc export . --generate-diff-git "$PREV..HEAD" --output-dir output
+          else
+            strictdoc export . --output-dir output
+          fi
+          touch output/html/.nojekyll
+          (cd output/html && zip -qr ../../site.zip .)
+
+      - name: Export PDF (warning on failure)
+        continue-on-error: true
+        run: |
+          strictdoc export . --formats=html2pdf --output-dir output_pdf
+          mkdir -p pdf
+          find output_pdf -name '*.pdf' -exec cp {} pdf/ \;
+          ls -la pdf
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-${{ github.ref_name }}
+          path: |
+            site.zip
+            pdf/*.pdf
+          if-no-files-found: warn
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PREV="${{ steps.prev.outputs.prev }}"
+          NOTES="시스템 문서 ${{ github.ref_name }}"
+          [ -n "$PREV" ] && NOTES="$NOTES — 변경 리포트: site.zip 의 diff.html / changelog.html (기준 $PREV)"
+          gh release create "${{ github.ref_name }}" site.zip pdf/*.pdf \
+            --title "docs ${{ github.ref_name }}" --notes "$NOTES" || \
+          gh release create "${{ github.ref_name }}" site.zip \
+            --title "docs ${{ github.ref_name }}" --notes "$NOTES"
