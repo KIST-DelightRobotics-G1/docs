@@ -29,6 +29,9 @@ safety-controller), 외부 요소(KAPEX · 클라우드 API · 디스플레이)�
    :width: 100%
    :alt: KIST DRL G1 C4 Container 다이어그램
 
+문서 칼럼에서는 축소되어 보이므로 `원본 크기로 열기 <_assets/c4_container_architecture.svg>`_
+(새 탭, 브라우저에서 확대 가능).
+
 .. note::
 
    이 도면은 draw.io로 **수작업** 관리하며 컨테이너가 추가·삭제될 때만 갱신한다.
