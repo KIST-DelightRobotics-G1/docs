@@ -30,6 +30,10 @@ def create_config() -> ProjectConfig:
         "SEARCH",
         "TRACEABILITY_MATRIX_SCREEN",
         "PROJECT_STATISTICS_SCREEN",
+        # 릴리스 간 변경 리포트: strictdoc export . --generate-diff-git "v0.1..v0.2"
+        "DIFF",
+        # PDF 납품본: strictdoc export . --formats=html2pdf (Chrome/Chromium 필요)
+        "HTML2PDF",
     ]
 
     # File 관계가 가리키는 소스 경로. tools/fetch_sources.py 가 개발 레포들을

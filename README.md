@@ -117,15 +117,37 @@ strictdoc export . --output-dir output     # Source coverage 포함 (internal �
 File 관계는 `REQUIREMENT_TO_SOURCE_TRACEABILITY` 가 켜진 internal 프로파일에서만 검증된다.
 public 프로파일(CI)은 소스 스캔을 하지 않으므로 `_src/` 없이도 빌드된다.
 
-CI(Pages)는 현재 `SDOC_PROFILE=public` (소스 미포함)으로 빌드한다.
-모든 개발 레포가 public이므로 소스 포함 빌드로 전환할 수 있다 — `docs.yml` 참고.
+CI(Pages)도 같은 방식으로 `_src/` 를 받아 **소스 포함(internal)** 으로 빌드한다 — 모든 개발
+레포가 public이라 토큰이 필요 없다. 레포가 비공개로 바뀌면 `docs.yml` 에서 `SDOC_PROFILE=public`
+으로 되돌린다.
 
 ---
 
-## CI 정책
+## CI / 릴리스
 
-- **빌드 실패**: 문법(.sgra) 위반, 끊어진 UID 참조 — `strictdoc export` 자체가 검증기다.
-- **경고**: 아키텍처 도면 최신성(`gen_arch.py --check`), 미구현·미검증 요구사항.
+| 워크플로 | 트리거 | 하는 일 |
+|---|---|---|
+| `docs.yml` | main push · PR · 수동 | `_src/` 체크아웃 → 소스 포함 빌드 → main이면 Pages 배포 |
+| `release.yml` | 태그 `v*` push · 수동 | 직전 태그 대비 **Diff/Changelog** 포함 사이트 + **문서별 PDF** → GitHub Release 첨부 |
+
+**정책**
+- **빌드 실패**: 문법(.sgra) 위반, 끊어진 UID 참조, 없는 File 경로 — `strictdoc export` 자체가 검증기다.
+- **경고**: 아키텍처 도면 최신성(`gen_arch.py --check`), PDF 생성 실패, 미구현·미검증 요구사항.
+
+**마일스톤 릴리스 절차**
+
+```bash
+git tag v0.2 && git push origin v0.2
+```
+
+릴리스 페이지에 `site.zip`(diff.html · changelog.html 포함)과 PDF가 올라온다.
+로컬에서 변경 리포트만 보려면:
+
+```bash
+strictdoc export . --generate-diff-git "v0.1..v0.2" --output-dir output   # output/html/diff.html
+```
+
+PDF는 Chrome/Chromium이 있는 환경에서 `strictdoc export . --formats=html2pdf` 로 만든다.
 
 ## 버전
 
