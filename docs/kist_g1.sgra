@@ -48,10 +48,6 @@ ELEMENTS:
     HUMAN_TITLE: 우선순위
     TYPE: SingleChoice(P0, P1, P2)
     REQUIRED: True
-  - TITLE: STATUS
-    HUMAN_TITLE: 상태
-    TYPE: SingleChoice(시작 전, 진행 중, 완료)
-    REQUIRED: True
   - TITLE: STANDARD
     HUMAN_TITLE: 관련 표준
     TYPE: MultipleChoice(ISO 13482, ISO 10218, ISO 26262, IEC 61508, ROS REP)
@@ -64,10 +60,6 @@ ELEMENTS:
     HUMAN_TITLE: 수용 기준
     TYPE: String
     REQUIRED: True
-  - TITLE: NOTION_URL
-    HUMAN_TITLE: Notion 원본
-    TYPE: String
-    REQUIRED: False
   - TITLE: COMMENT
     HUMAN_TITLE: 비고
     TYPE: String
@@ -126,10 +118,6 @@ ELEMENTS:
     HUMAN_TITLE: 전제조건
     TYPE: String
     REQUIRED: True
-  - TITLE: NOTION_URL
-    HUMAN_TITLE: Notion 원본
-    TYPE: String
-    REQUIRED: False
   - TITLE: COMMENT
     HUMAN_TITLE: 비고
     TYPE: String
