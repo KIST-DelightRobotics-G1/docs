@@ -138,10 +138,6 @@ ELEMENTS:
     HUMAN_TITLE: 검증 방법
     TYPE: SingleChoice(Test, Demonstration, Analysis, Inspection, Review)
     REQUIRED: True
-  - TITLE: STATUS
-    HUMAN_TITLE: 상태
-    TYPE: SingleChoice(시작 전, 진행 중, 완료)
-    REQUIRED: True
   - TITLE: STATEMENT
     HUMAN_TITLE: 절차
     TYPE: String
