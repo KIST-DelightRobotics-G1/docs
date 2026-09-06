@@ -92,10 +92,14 @@ docs/
 | 도면 | 원천 | 변경 빈도 | 역할 |
 |---|---|---|---|
 | `docs/40_architecture.sdoc` | ICD에서 `tools/gen_arch.py` 로 **생성** | 인터페이스 바뀔 때마다 | 경로별 상세. ICD와 어긋날 수 없음 |
-| C4 컨테이너 조감도 (SVG) | draw.io 수작업 | 컨테이너 추가·삭제 때만 | 전체 그림 · 발표용 |
+| `docs/_assets/c4_container_architecture.svg` | draw.io **수작업** (프로젝트 개요 문서에 첨부) | 컨테이너 추가·삭제 때만 | 전체 그림 · 발표용 |
 
 생성 도면은 직접 편집하지 않는다. `python tools/gen_arch.py --check` 가 "ICD는 바뀌었는데
 도면은 안 바뀐" 상태를 잡는다 (CI에서는 경고).
+
+조감도를 갱신하려면 draw.io에서 `File → Export as → SVG` 로 내보내 같은 파일명으로 교체한다.
+SVG 안에 draw.io 원본 XML이 내장되어 있으므로 별도 `.drawio` 파일을 커밋할 필요 없이 이 SVG를
+draw.io로 다시 열어 편집할 수 있다. `docs/_assets/` 는 StrictDoc이 자동으로 사이트에 복사한다.
 
 ---
 
