@@ -43,7 +43,6 @@ TITLE: 음성 명령 인식 및 텍스트 변환
 CATEGORY: FR
 MODULE: Perception
 PRIORITY: P0
-STATUS: 진행 중
 STATEMENT: >>>
 시스템은 사용자 및 KAPEX 작업자의 음성을 실시간으로 인식하여 텍스트로 변환하고,
 그 결과를 상위 판단 모듈(orchestrator)에 전달하여야 한다.
@@ -62,7 +61,6 @@ TITLE: 음성 응답 출력
 CATEGORY: FR
 MODULE: Control
 PRIORITY: P0
-STATUS: 진행 중
 STATEMENT: >>>
 시스템은 주어진 텍스트를 한국어 음성으로 합성하여 로봇 스피커로 출력하여야 한다.
 
@@ -91,7 +89,6 @@ TITLE: 사전 정의 sub-task 시퀀스 실행 및 성공 판정
 CATEGORY: FR
 MODULE: Planning
 PRIORITY: P0
-STATUS: 완료
 STATEMENT: >>>
 시스템은 사전 정의된 시나리오를 로드·검증하고, 음성 키워드로 트리거하여
 sub-task를 순차적으로 실행하여야 한다.
@@ -123,7 +120,6 @@ TITLE: 카메라+관절 상태 기반 전신 조작 동작 생성
 CATEGORY: FR
 MODULE: Control
 PRIORITY: P0
-STATUS: 시작 전
 STATEMENT: >>>
 시스템은 언어 명령, 카메라 영상, 로봇 관절 상태를 입력으로 전신(상체+하체) 조작 동작을
 실시간으로 생성하여 제어 계층에 전달하여야 한다.
@@ -142,7 +138,6 @@ TITLE: 동작 생성 정책 추론 서빙
 CATEGORY: FR
 MODULE: Middleware
 PRIORITY: P0
-STATUS: 시작 전
 STATEMENT: >>>
 시스템은 GPU 상에서 동작 생성 정책 모델을 실시간으로 추론·서빙하여 동작 명령을
 응답하여야 한다.
@@ -161,7 +156,6 @@ TITLE: VLA 출력 balance 보정 (GearSonic)
 CATEGORY: FR
 MODULE: Control
 PRIORITY: P0
-STATUS: 시작 전
 STATEMENT: >>>
 시스템은 동작 생성 정책이 출력한 관절 동작 목표를 로봇의 균형을 고려하여 보정한
 관절 목표로 변환하여 출력하여야 한다.
@@ -184,7 +178,6 @@ TITLE: 자연어 명령 기반 자율 보행
 CATEGORY: FR
 MODULE: Planning, Control
 PRIORITY: P0
-STATUS: 시작 전
 STATEMENT: >>>
 시스템은 자연어 이동 명령을 받아 목표 지점까지 자율 보행하여야 하며,
 위치·자세 오차 기준으로 목표 도달을 판정하여야 한다.
@@ -214,7 +207,6 @@ TITLE: 저수준 관절 명령 연속 모터 제어
 CATEGORY: FR
 MODULE: Control
 PRIORITY: P0
-STATUS: 시작 전
 STATEMENT: >>>
 시스템은 생성된 동작 명령을 정해진 고정 주기로 모터에 연속 전달하여야 한다.
 
@@ -231,7 +223,6 @@ TITLE: 저수준 제어 주기 목표 달성
 CATEGORY: NFR
 MODULE: Control, Middleware
 PRIORITY: P0
-STATUS: 시작 전
 STATEMENT: >>>
 저수준 제어 루프는 목표 주기를 99 % 이상의 유지율로 만족하여야 한다.
 
@@ -259,7 +250,6 @@ TITLE: 관절 명령 이상 감지 및 긴급 정지
 CATEGORY: SR
 MODULE: Safety
 PRIORITY: P0
-STATUS: 시작 전
 STANDARD: ISO 13482
 STATEMENT: >>>
 시스템은 관절 한계 초과, 급격한 명령 변화 등 관절 명령의 이상을 감지하여야 한다.
@@ -283,7 +273,6 @@ TITLE: 센서 데이터 수집 및 PC 전달
 CATEGORY: FR
 MODULE: HAL
 PRIORITY: P0
-STATUS: 진행 중
 STATEMENT: >>>
 시스템은 카메라(RGB+Depth), 위치(UWB), 마이크 센서 데이터를 실시간으로 수집하여
 PC로 전달하여야 한다. 카메라 데이터는 압축하여 전송하여야 한다.
@@ -299,7 +288,6 @@ TITLE: PC↔로봇 양방향 데이터 통신
 CATEGORY: FR
 MODULE: Middleware
 PRIORITY: P0
-STATUS: 진행 중
 STATEMENT: >>>
 시스템은 PC의 명령 출력을 로봇으로, 로봇의 센서·상태 데이터를 PC로
 양방향 실시간 전달하여야 한다.
@@ -329,7 +317,6 @@ TITLE: 로봇 상태 실시간 모니터링 GUI
 CATEGORY: FR
 MODULE: System
 PRIORITY: P1
-STATUS: 진행 중
 STATEMENT: >>>
 시스템은 로봇의 상태(시나리오·sub-task 진행 상황)와 최신 카메라 영상을
 외부 디스플레이로 실시간 스트리밍하여야 한다.
@@ -348,7 +335,6 @@ TITLE: 디스플레이 렌더러 (브라우저)
 CATEGORY: FR
 MODULE: System
 PRIORITY: P2
-STATUS: 완료
 STATEMENT: >>>
 시스템은 GUI가 발행하는 디스플레이 데이터(카메라 영상 + 상태)를 브라우저에서 구독하여
 영상 위에 시나리오·sub-task·상태를 오버레이 표시하여야 한다.

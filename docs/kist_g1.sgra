@@ -48,10 +48,6 @@ ELEMENTS:
     HUMAN_TITLE: 우선순위
     TYPE: SingleChoice(P0, P1, P2)
     REQUIRED: True
-  - TITLE: STATUS
-    HUMAN_TITLE: 상태
-    TYPE: SingleChoice(시작 전, 진행 중, 완료)
-    REQUIRED: True
   - TITLE: STANDARD
     HUMAN_TITLE: 관련 표준
     TYPE: MultipleChoice(ISO 13482, ISO 10218, ISO 26262, IEC 61508, ROS REP)
