@@ -106,10 +106,6 @@ ELEMENTS:
     HUMAN_TITLE: 발행 주기
     TYPE: String
     REQUIRED: True
-  - TITLE: STATUS
-    HUMAN_TITLE: 상태
-    TYPE: SingleChoice(시작 전, 진행 중, 완료)
-    REQUIRED: True
   - TITLE: STATEMENT
     HUMAN_TITLE: 필드 정의
     TYPE: String

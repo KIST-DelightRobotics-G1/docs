@@ -10,7 +10,9 @@
     ├── kist-ext-sensor-io/
     └── ...
 
-`_src/` 는 빌드 산출물이므로 .gitignore에 있다. 커밋하지 않는다.
+`_src/` 는 빌드 산출물이며 커밋하지 않는다. 단 **.gitignore 에는 넣지 않는다** —
+StrictDoc이 .gitignore 패턴을 소스 스캔 제외 목록에 합치기 때문이다. 대신 이
+스크립트가 `.git/info/exclude` (로컬 전용) 에 등록한다.
 
 사용법:
 
@@ -60,6 +62,28 @@ def redact(url: str) -> str:
     return url
 
 
+def ensure_git_exclude(dest_root: Path) -> None:
+    """`_src/` 를 git 로컬 제외(.git/info/exclude)에 등록한다.
+
+    `.gitignore` 에 넣으면 안 된다 — StrictDoc은 `.gitignore` 의 패턴을 소스 스캔
+    제외 목록에 그대로 합치므로, 거기에 `_src/` 가 있으면 File 관계가 가리키는
+    파일을 찾지 못해 빌드가 실패한다. 커밋되지 않는 로컬 제외 파일만 쓴다.
+    """
+    git_dir = ROOT / ".git"
+    if not git_dir.is_dir():
+        return
+    exclude = git_dir / "info" / "exclude"
+    exclude.parent.mkdir(parents=True, exist_ok=True)
+    entry = f"{dest_root.relative_to(ROOT).as_posix()}/"
+    existing = exclude.read_text(encoding="utf-8") if exclude.exists() else ""
+    if entry not in existing.splitlines():
+        with exclude.open("a", encoding="utf-8") as f:
+            if existing and not existing.endswith("\n"):
+                f.write("\n")
+            f.write(f"{entry}\n")
+        print(f"git 로컬 제외 등록: .git/info/exclude += {entry}")
+
+
 def run(cmd: list[str], dry_run: bool) -> int:
     printable = " ".join(redact(c) for c in cmd)
     if dry_run:
@@ -93,6 +117,7 @@ def main() -> int:
 
     if not args.dry_run:
         dest_root.mkdir(parents=True, exist_ok=True)
+        ensure_git_exclude(dest_root)
 
     failed: list[str] = []
     for entry in repos:
