@@ -109,6 +109,14 @@ strictdoc export . --output-dir output     # Source coverage 포함 (internal �
 `_src/` 는 빌드 산출물이며 커밋하지 않는다. 릴리스 스냅샷이 필요하면 `repos.json` 의 `ref` 를
 커밋 SHA로 고정한다.
 
+> ⚠️ `_src/` 를 `.gitignore` 에 넣지 말 것. StrictDoc은 `.gitignore` 의 패턴을 소스 스캔
+> 제외 목록에 그대로 합치므로, 넣는 순간 `File` 관계가 가리키는 파일을 찾지 못해
+> 빌드가 실패한다 (`Requirement ... references a file that does not exist`).
+> `fetch_sources.py` 가 대신 `.git/info/exclude` (로컬 전용) 에 등록한다.
+
+File 관계는 `REQUIREMENT_TO_SOURCE_TRACEABILITY` 가 켜진 internal 프로파일에서만 검증된다.
+public 프로파일(CI)은 소스 스캔을 하지 않으므로 `_src/` 없이도 빌드된다.
+
 CI(Pages)는 현재 `SDOC_PROFILE=public` (소스 미포함)으로 빌드한다.
 모든 개발 레포가 public이므로 소스 포함 빌드로 전환할 수 있다 — `docs.yml` 참고.
 

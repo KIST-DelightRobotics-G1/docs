@@ -18,7 +18,7 @@ STATEMENT: >>>
 본 문서는 시스템의 컨테이너 구성과 컨테이너 간 데이터 흐름을 정의한다.
 아래 다이어그램은 손으로 그린 것이 아니라 인터페이스 정의서(ICD)에서 생성된다.
 각 ``[ICD]`` 노드의 ``송신 컨테이너`` / ``수신 컨테이너`` 가 화살표의 양 끝이고,
-``통신 방식`` 이 선 모양, ``상태`` 가 색상이 된다.
+``통신 방식`` 이 선 모양이 된다.
 
 .. code-block:: text
 
@@ -28,7 +28,7 @@ ICD를 수정한 뒤 위 명령을 다시 실행하면 다이어그램이 갱신
 CI에서 ``python tools/gen_arch.py --check`` 를 돌리면
 "ICD는 바뀌었는데 다이어그램은 안 바뀐" 상태를 빌드 실패로 잡을 수 있다.
 
-현재 인터페이스 15건 — 완료 1 · 진행 중 8 · 시작 전 6.
+현재 인터페이스 22건.
 <<<
 
 [[SECTION]]
@@ -44,23 +44,8 @@ STATEMENT: >>>
 - 실선 — DDS 토픽
 - 점선 — DDS 외 통신 (HTTPS · gRPC · WebSocket)
 
-**컨테이너 색상** — 그 컨테이너가 관여하는 인터페이스 중 가장 뒤처진 상태를 따른다.
-
-.. list-table::
-   :widths: 20 80
-   :header-rows: 1
-
-   * - 색
-     - 의미
-   * - 초록
-     - 관여 인터페이스가 모두 ``완료``
-   * - 노랑
-     - ``진행 중`` 인터페이스 포함
-   * - 빨강
-     - ``시작 전`` 인터페이스 포함 — 아직 배선되지 않은 경로가 있다
-
-즉 어디까지 실제로 연결되었는지가 그림에 그대로 드러난다.
-정적 이미지로 그린 도면은 이 정보를 담을 수 없고, 담더라도 곧 실제와 어긋난다.
+**구현 상태** 는 도면에 표시하지 않는다. 각 인터페이스가 구현 파일에 연결되었는지는
+**Source coverage** 화면과 각 ICD 노드의 ``File`` 관계에서 확인한다.
 
 화살표 라벨은 ICD 번호이며, 토픽 상세는 각 그림 아래 표에 있다.
 <<<
@@ -93,44 +78,33 @@ STATEMENT: >>>
         n_stt_node -.->|"ICD-33"| n_Google_Cloud_STT
         n_stt_node -->|"ICD-64"| n_orchestrator_node
         n_speaker_node -->|"ICD-42"| n_stt_node
-
-        classDef done fill:#d5efdc,stroke:#3d8f5f,color:#123;
-        classDef wip fill:#fdf0d0,stroke:#c99a2e,color:#123;
-        classDef todo fill:#f2d5d5,stroke:#b45c5c,color:#123;
-        class n_Google_Cloud_STT,n_speaker_node,n_stt_node todo;
-        class n_ext_sensor_io,n_orchestrator_node wip;
    </pre>
    </div>
 
 .. list-table::
-   :widths: 10 20 20 34 16
+   :widths: 10 22 22 46
    :header-rows: 1
 
    * - ID
      - 송신
      - 수신
      - 토픽 / 엔드포인트
-     - 상태
    * - ICD-3
      - ext-sensor-io
      - stt_node
      - ``rt/kist/mic/audio``
-     - 진행 중
    * - ICD-33
      - stt_node
      - Google Cloud STT
      - ``google.cloud.speech.v1``
-     - 시작 전
    * - ICD-64
      - stt_node
      - orchestrator_node
      - ``/cortex/stt/transcript``
-     - 진행 중
    * - ICD-42
      - speaker_node
      - stt_node
-     - ``/onboard/audio/speaker_state → /bridge/audio/speaker_state``
-     - 시작 전
+     - ``/bridge/audio/speaker_state``
 
 <<<
 
@@ -161,44 +135,33 @@ STATEMENT: >>>
         n_tts_node -.->|"ICD-34"| n_Naver_CLOVA_TTS
         n_tts_node -->|"ICD-8"| n_speaker_node
         n_orchestrator_node -->|"ICD-69"| n_tts_node
-
-        classDef done fill:#d5efdc,stroke:#3d8f5f,color:#123;
-        classDef wip fill:#fdf0d0,stroke:#c99a2e,color:#123;
-        classDef todo fill:#f2d5d5,stroke:#b45c5c,color:#123;
-        class n_Naver_CLOVA_TTS,n_speaker_node,n_tts_node todo;
-        class n_orchestrator_node wip;
    </pre>
    </div>
 
 .. list-table::
-   :widths: 10 20 20 34 16
+   :widths: 10 22 22 46
    :header-rows: 1
 
    * - ID
      - 송신
      - 수신
      - 토픽 / 엔드포인트
-     - 상태
    * - ICD-68
      - orchestrator_node
      - tts_node
      - ``/cortex/tts/say``
-     - 진행 중
    * - ICD-34
      - tts_node
      - Naver CLOVA TTS
      - ``REST API``
-     - 시작 전
    * - ICD-8
      - tts_node
      - speaker_node
      - ``/bridge/cmd/audio_out``
-     - 시작 전
    * - ICD-69
      - orchestrator_node
      - tts_node
      - ``/cortex/tts/stop``
-     - 진행 중
 
 <<<
 
@@ -217,6 +180,7 @@ STATEMENT: >>>
         subgraph workstation["PC (RTX 4090) — Workstation"]
           n_vlm_node["vlm_node"]
           n_orchestrator_node["orchestrator_node"]
+          n_gearsonic["gearsonic"]
         end
         subgraph external["External"]
           n_VLM_API["VLM API"]
@@ -225,39 +189,34 @@ STATEMENT: >>>
         n_orchestrator_node -->|"ICD-65"| n_vlm_node
         n_vlm_node -->|"ICD-66"| n_orchestrator_node
         n_vlm_node -.->|"ICD-71"| n_VLM_API
-
-        classDef done fill:#d5efdc,stroke:#3d8f5f,color:#123;
-        classDef wip fill:#fdf0d0,stroke:#c99a2e,color:#123;
-        classDef todo fill:#f2d5d5,stroke:#b45c5c,color:#123;
-        class n_VLM_API,n_vlm_node todo;
-        class n_orchestrator_node wip;
+        n_orchestrator_node -->|"ICD-70"| n_gearsonic
    </pre>
    </div>
 
 .. list-table::
-   :widths: 10 20 20 34 16
+   :widths: 10 22 22 46
    :header-rows: 1
 
    * - ID
      - 송신
      - 수신
      - 토픽 / 엔드포인트
-     - 상태
    * - ICD-65
      - orchestrator_node
      - vlm_node
      - ``/cortex/active_subtask``
-     - 진행 중
    * - ICD-66
      - vlm_node
      - orchestrator_node
      - ``/cortex/critic/verdict``
-     - 진행 중
    * - ICD-71
      - vlm_node
      - VLM API
      - ``REST API (TBD)``
-     - 시작 전
+   * - ICD-70
+     - orchestrator_node
+     - gearsonic
+     - ``(미정) ActionCmd``
 
 <<<
 
@@ -288,39 +247,78 @@ STATEMENT: >>>
         n_ext_sensor_io -->|"ICD-62"| n_vlm_node
         n_orchestrator_node -->|"ICD-67"| n_gui_bridge_node
         n_gui_bridge_node -.->|"ICD-55"| n_Display_Renderer
-
-        classDef done fill:#d5efdc,stroke:#3d8f5f,color:#123;
-        classDef wip fill:#fdf0d0,stroke:#c99a2e,color:#123;
-        classDef todo fill:#f2d5d5,stroke:#b45c5c,color:#123;
-        class n_Display_Renderer,n_gui_bridge_node todo;
-        class n_ext_sensor_io,n_orchestrator_node,n_vlm_node wip;
    </pre>
    </div>
 
 .. list-table::
-   :widths: 10 20 20 34 16
+   :widths: 10 22 22 46
    :header-rows: 1
 
    * - ID
      - 송신
      - 수신
      - 토픽 / 엔드포인트
-     - 상태
    * - ICD-62
      - ext-sensor-io
      - vlm_node
      - ``rt/kist/camera/<name>/color/h264``
-     - 진행 중
    * - ICD-67
      - orchestrator_node
      - gui_bridge_node
      - ``/cortex/task_status``
-     - 진행 중
    * - ICD-55
      - gui_bridge_node
      - Display Renderer
      - ``ws://<cortex-host>:8081``
-     - 시작 전
+
+<<<
+
+[[/SECTION]]
+
+[[SECTION]]
+TITLE: 센서 입력 (측위 · 인지)
+
+[TEXT]
+STATEMENT: >>>
+.. raw:: html
+
+   <div style="overflow-x:auto; max-width:100%;">
+   <pre class="mermaid">
+      flowchart TB
+        subgraph onboard["Unitree G1 (NX) — Onboard"]
+          n_G1["G1"]
+          n_ext_sensor_io["ext-sensor-io"]
+        end
+        subgraph workstation["PC (RTX 4090) — Workstation"]
+          n_nav_planner["nav-planner"]
+        end
+
+        n_ext_sensor_io -->|"ICD-36"| n_nav_planner
+        n_G1 -->|"ICD-58"| n_nav_planner
+        n_ext_sensor_io -->|"ICD-63"| n_nav_planner
+   </pre>
+   </div>
+
+.. list-table::
+   :widths: 10 22 22 46
+   :header-rows: 1
+
+   * - ID
+     - 송신
+     - 수신
+     - 토픽 / 엔드포인트
+   * - ICD-36
+     - ext-sensor-io
+     - nav-planner
+     - ``rt/kist/uwb/pose``
+   * - ICD-58
+     - G1
+     - nav-planner
+     - ``rt/utlidar/cloud_livox_mid360``
+   * - ICD-63
+     - ext-sensor-io
+     - nav-planner
+     - ``rt/kist/camera/<name>/depth/rvl``
 
 <<<
 
@@ -343,29 +341,37 @@ STATEMENT: >>>
           n_gearsonic["gearsonic"]
         end
 
+        n_G1 -->|"ICD-4"| n_gearsonic
+        n_G1 -->|"ICD-41"| n_gearsonic
         n_gearsonic -->|"ICD-50"| n_G1
-
-        classDef done fill:#d5efdc,stroke:#3d8f5f,color:#123;
-        classDef wip fill:#fdf0d0,stroke:#c99a2e,color:#123;
-        classDef todo fill:#f2d5d5,stroke:#b45c5c,color:#123;
-        class n_G1,n_gearsonic done;
+        n_gearsonic -->|"ICD-6"| n_G1
    </pre>
    </div>
 
 .. list-table::
-   :widths: 10 20 20 34 16
+   :widths: 10 22 22 46
    :header-rows: 1
 
    * - ID
      - 송신
      - 수신
      - 토픽 / 엔드포인트
-     - 상태
+   * - ICD-4
+     - G1
+     - gearsonic
+     - ``rt/lowstate``
+   * - ICD-41
+     - G1
+     - gearsonic
+     - ``rt/secondary_imu``
    * - ICD-50
      - gearsonic
      - G1
      - ``rt/lowcmd``
-     - 완료
+   * - ICD-6
+     - gearsonic
+     - G1
+     - ``rt/dex3/{left,right}/cmd``
 
 <<<
 

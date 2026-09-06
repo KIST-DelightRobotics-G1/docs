@@ -6,7 +6,6 @@
     SOURCE  → TARGET      : 화살표의 양 끝
     TOPIC / MSG_TYPE      : 상세표의 엔드포인트
     COMM_TYPE             : 선 모양 (DDS 실선 / 그 외 점선)
-    STATUS                : 구현 상태 (색상)
 
 즉 ICD 데이터베이스 자체가 아키텍처 그래프이므로, 다이어그램을 따로 그릴 필요 없이
 여기서 생성한다. 손으로 그린 도면과 ICD가 어긋날 여지가 사라진다.
@@ -68,9 +67,6 @@ ZONES: list[tuple[str, str, list[str]]] = [
     ),
 ]
 
-STATUS_CLASS = {"완료": "done", "진행 중": "wip", "시작 전": "todo"}
-STATUS_SEVERITY = {"완료": 0, "진행 중": 1, "시작 전": 2}
-
 SINGLE_LINE_FIELDS = {
     "UID",
     "TITLE",
@@ -81,7 +77,6 @@ SINGLE_LINE_FIELDS = {
     "MSG_TYPE",
     "QOS",
     "FREQUENCY",
-    "STATUS",
 }
 
 DASHED_COMM_TYPES = {"HTTPS", "gRPC", "WebSocket"}
@@ -96,7 +91,6 @@ class Interface:
     target: str = ""
     topic: str = ""
     msg_type: str = ""
-    status: str = ""
     section: str = ""
     parents: list[str] = field(default_factory=list)
 
@@ -232,28 +226,6 @@ def build_mermaid(interfaces: list[Interface]) -> str:
             f'  {node_id(itf.source)} {arrow}|"{esc(itf.uid)}"| {node_id(itf.target)}'
         )
 
-    out.append("")
-    out.append("  classDef done fill:#d5efdc,stroke:#3d8f5f,color:#123;")
-    out.append("  classDef wip fill:#fdf0d0,stroke:#c99a2e,color:#123;")
-    out.append("  classDef todo fill:#f2d5d5,stroke:#b45c5c,color:#123;")
-
-    # 컨테이너 색상은 그 컨테이너가 관여하는 인터페이스 중 가장 뒤처진 상태를 따른다.
-    worst: dict[str, str] = {}
-    for itf in interfaces:
-        for container in (itf.source, itf.target):
-            prev = worst.get(container)
-            if prev is None or STATUS_SEVERITY.get(itf.status, 0) > STATUS_SEVERITY.get(
-                prev, 0
-            ):
-                worst[container] = itf.status
-
-    by_class: dict[str, list[str]] = {}
-    for container, status in worst.items():
-        cls = STATUS_CLASS.get(status)
-        if cls:
-            by_class.setdefault(cls, []).append(node_id(container))
-    for cls, ids in sorted(by_class.items()):
-        out.append(f"  class {','.join(sorted(ids))} {cls};")
 
     return "\n".join(out)
 
@@ -288,18 +260,16 @@ def detail_table(interfaces: list[Interface]) -> str:
         rows.append(f"     - {itf.source}")
         rows.append(f"     - {itf.target}")
         rows.append(f"     - ``{endpoint}``")
-        rows.append(f"     - {itf.status}")
     body = "\n".join(rows)
     return (
         ".. list-table::\n"
-        "   :widths: 10 20 20 34 16\n"
+        "   :widths: 10 22 22 46\n"
         "   :header-rows: 1\n"
         "\n"
         "   * - ID\n"
         "     - 송신\n"
         "     - 수신\n"
         "     - 토픽 / 엔드포인트\n"
-        "     - 상태\n"
         f"{body}\n"
     )
 
@@ -317,11 +287,6 @@ def group_by_section(interfaces: list[Interface]) -> list[tuple[str, list[Interf
 
 
 def render_document(interfaces: list[Interface]) -> str:
-    counts = {"완료": 0, "진행 중": 0, "시작 전": 0}
-    for itf in interfaces:
-        if itf.status in counts:
-            counts[itf.status] += 1
-
     parts: list[str] = [
         f"""[DOCUMENT]
 TITLE: KIST DRL G1 아키텍처
@@ -343,7 +308,7 @@ STATEMENT: >>>
 본 문서는 시스템의 컨테이너 구성과 컨테이너 간 데이터 흐름을 정의한다.
 아래 다이어그램은 손으로 그린 것이 아니라 인터페이스 정의서(ICD)에서 생성된다.
 각 ``[ICD]`` 노드의 ``송신 컨테이너`` / ``수신 컨테이너`` 가 화살표의 양 끝이고,
-``통신 방식`` 이 선 모양, ``상태`` 가 색상이 된다.
+``통신 방식`` 이 선 모양이 된다.
 
 .. code-block:: text
 
@@ -353,7 +318,7 @@ ICD를 수정한 뒤 위 명령을 다시 실행하면 다이어그램이 갱신
 CI에서 ``python tools/gen_arch.py --check`` 를 돌리면
 "ICD는 바뀌었는데 다이어그램은 안 바뀐" 상태를 빌드 실패로 잡을 수 있다.
 
-현재 인터페이스 {len(interfaces)}건 — 완료 {counts["완료"]} · 진행 중 {counts["진행 중"]} · 시작 전 {counts["시작 전"]}.
+현재 인터페이스 {len(interfaces)}건.
 <<<"""
     ]
 
@@ -371,23 +336,8 @@ STATEMENT: >>>
 - 실선 — DDS 토픽
 - 점선 — DDS 외 통신 (HTTPS · gRPC · WebSocket)
 
-**컨테이너 색상** — 그 컨테이너가 관여하는 인터페이스 중 가장 뒤처진 상태를 따른다.
-
-.. list-table::
-   :widths: 20 80
-   :header-rows: 1
-
-   * - 색
-     - 의미
-   * - 초록
-     - 관여 인터페이스가 모두 ``완료``
-   * - 노랑
-     - ``진행 중`` 인터페이스 포함
-   * - 빨강
-     - ``시작 전`` 인터페이스 포함 — 아직 배선되지 않은 경로가 있다
-
-즉 어디까지 실제로 연결되었는지가 그림에 그대로 드러난다.
-정적 이미지로 그린 도면은 이 정보를 담을 수 없고, 담더라도 곧 실제와 어긋난다.
+**구현 상태** 는 도면에 표시하지 않는다. 각 인터페이스가 구현 파일에 연결되었는지는
+**Source coverage** 화면과 각 ICD 노드의 ``File`` 관계에서 확인한다.
 
 화살표 라벨은 ICD 번호이며, 토픽 상세는 각 그림 아래 표에 있다.
 <<<

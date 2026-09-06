@@ -1,5 +1,6 @@
 output/
 __pycache__/
 *.pyc
-_src/
 .venv/
+# _src/ 는 여기 넣지 않는다 — StrictDoc이 .gitignore 패턴을 소스 스캔 제외에 합쳐
+# File 관계가 깨진다. tools/fetch_sources.py 가 .git/info/exclude 에 등록한다.
