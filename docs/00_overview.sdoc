@@ -1,8 +1,8 @@
 [DOCUMENT]
 TITLE: 프로젝트 개요
 UID: DOC-OVERVIEW
-VERSION: 0.1
-DATE: 2026-09-05
+VERSION: 0.2
+DATE: 2026-09-06
 OPTIONS:
   MARKUP: RST
   AUTO_LEVELS: On
@@ -15,6 +15,32 @@ STATEMENT: >>>
 이 레포지토리(``KIST-DelightRobotics-G1/docs``)가 유일한 원본(SSOT)이다.
 Notion의 ``SYS-REQ`` / ``ICD`` 데이터베이스는 이관 후 폐기되었다.
 <<<
+
+[[SECTION]]
+TITLE: 아키텍처 조감도 (C4 Container)
+
+[TEXT]
+STATEMENT: >>>
+시스템 전체의 컨테이너 배치와 주요 데이터 흐름이다. 온보드(Unitree G1 NX)와 워크스테이션(PC)의
+두 실행 노드, 그 안의 컨테이너(cortex · gearsonic-inference · vla-inference · ext-sensor-io ·
+safety-controller), 외부 요소(KAPEX · 클라우드 API · 디스플레이)를 한 장에 담는다.
+
+.. image:: _assets/c4_container_architecture.svg
+   :width: 100%
+   :alt: KIST DRL G1 C4 Container 다이어그램
+
+문서 칼럼에서는 축소되어 보이므로 `원본 크기로 열기 <_assets/c4_container_architecture.svg>`_
+(새 탭, 브라우저에서 확대 가능).
+
+.. note::
+
+   이 도면은 draw.io로 **수작업** 관리하며 컨테이너가 추가·삭제될 때만 갱신한다.
+   인터페이스 단위의 상세 데이터 흐름은 **아키텍처** 문서에서 ICD로부터 자동 생성된다(이원화).
+   갱신 방법: draw.io에서 ``File → Export as → SVG`` 로 내보내 ``docs/_assets/c4_container_architecture.svg``
+   를 교체한다. SVG 안에 draw.io 원본이 내장되어 있어 draw.io로 다시 열어 편집할 수 있다.
+<<<
+
+[[/SECTION]]
 
 [[SECTION]]
 TITLE: 문서 구성
