@@ -18,7 +18,7 @@ permissions:
   contents: write
 
 env:
-  C4_PAGE: Temp_KIST_DRL_G1_Cortex_v0.1
+  C4_PAGE: C4_Container_Option1
 
 jobs:
   export:
