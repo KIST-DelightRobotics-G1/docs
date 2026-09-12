@@ -97,9 +97,33 @@ docs/
 생성 도면은 직접 편집하지 않는다. `python tools/gen_arch.py --check` 가 "ICD는 바뀌었는데
 도면은 안 바뀐" 상태를 잡는다 (CI에서는 경고).
 
-조감도를 갱신하려면 draw.io에서 `File → Export as → SVG` 로 내보내 같은 파일명으로 교체한다.
-SVG 안에 draw.io 원본 XML이 내장되어 있으므로 별도 `.drawio` 파일을 커밋할 필요 없이 이 SVG를
-draw.io로 다시 열어 편집할 수 있다. `docs/_assets/` 는 StrictDoc이 자동으로 사이트에 복사한다.
+**도면 원본은 `docs/_assets/KIST_DRL_G1_Arch.drawio`** (3페이지 — C4_Context_Option1 · C4_Container_Option1 ·
+`Temp_KIST_DRL_G1_Cortex_v0.1`). draw.io에서 *Open from → GitHub* 로 이 파일을 직접 열어 편집·저장한다.
+SVG는 생성물이다:
+
+- 사이트 빌드(`docs.yml`)와 릴리스는 매번 `.drawio` 에서 SVG를 export 한다 (`svg-theme: light`).
+- `main` 에서 `.drawio` 가 바뀌면 `drawio-svg.yml` 이 `c4_container_architecture.svg` 를 다시 만들어 커밋한다
+  (로컬 빌드용 사본).
+- export 대상 페이지 이름은 워크플로의 `C4_PAGE` 에 있다. 페이지 이름을 바꾸면 같이 바꾼다.
+- 웹 앱에서 수동 export 한 SVG를 쓸 때는 `python tools/pin_svg_light.py x.svg` 로 다크 테마 반전을 제거한다.
+
+`docs/_assets/` 는 StrictDoc이 자동으로 사이트에 복사한다.
+
+---
+
+## 주간 동기화 (코드 → 문서·도면)
+
+| 단계 | 누가 | 무엇 |
+|---|---|---|
+| 감지 | `weekly-sync.yml` (매주 월 09:00 KST, 수동 가능) | org 전 레포 main 을 `tools/sync_state.json` 의 마지막 SHA와 비교 → 커밋·새 토픽·pub/sub 코드·파일 이동·**File 관계 파손** 을 Issue 로 |
+| 반영 | `/g1-sync` 스킬 (사람이 호출) | Issue 를 읽고 ICD 신규/갱신 · File 관계 · 도면 · TEST_CASE 를 판단해 PR 1개 + `sync_state.json` 갱신 |
+| 승인 | 리뷰어 | PR 머지 → Pages · SVG 자동 갱신 |
+
+로컬에서 감지만 해보려면:
+
+```bash
+python tools/sync_repos.py --report sync_report.md
+```
 
 ---
 
