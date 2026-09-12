@@ -44,7 +44,7 @@ jobs:
           f=$(find docs/_assets -path '*_export*' -name "*${C4_PAGE}*.svg" | head -1)
           test -n "$f" || { echo "::error::page ${C4_PAGE} not exported"; ls -R docs/_assets | head -40; exit 1; }
           python tools/pin_svg_light.py "$f" docs/_assets/c4_container_architecture.svg
-          rm -rf docs/_assets/_export
+          sudo rm -rf docs/_assets/_export   # docker 액션이 root 소유로 만든다
 
       - name: Commit regenerated SVG
         run: |
