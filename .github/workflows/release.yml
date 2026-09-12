@@ -58,7 +58,7 @@ jobs:
         run: |
           f=$(find docs/_assets -path '*_export*' -name "*${C4_PAGE}*.svg" | head -1)
           test -n "$f" && python tools/pin_svg_light.py "$f" docs/_assets/c4_container_architecture.svg
-          rm -rf docs/_assets/_export
+          sudo rm -rf docs/_assets/_export   # docker 액션이 root 소유로 만든다
 
       # 직전 태그를 찾는다. 첫 릴리스면 diff 없이 빌드한다.
       - name: Resolve previous revision

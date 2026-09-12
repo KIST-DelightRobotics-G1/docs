@@ -63,7 +63,7 @@ jobs:
         run: |
           f=$(find docs/_assets -path '*_export*' -name "*${C4_PAGE}*.svg" | head -1)
           test -n "$f" && python tools/pin_svg_light.py "$f" docs/_assets/c4_container_architecture.svg
-          rm -rf docs/_assets/_export
+          sudo rm -rf docs/_assets/_export   # docker 액션이 root 소유로 만든다
 
       # File 관계가 가리키는 구현 파일. 한 레포를 못 받아도 빌드는 계속된다.
       - name: Fetch source repos into _src/
