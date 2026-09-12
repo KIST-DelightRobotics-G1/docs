@@ -97,8 +97,8 @@ docs/
 생성 도면은 직접 편집하지 않는다. `python tools/gen_arch.py --check` 가 "ICD는 바뀌었는데
 도면은 안 바뀐" 상태를 잡는다 (CI에서는 경고).
 
-**도면 원본은 `docs/_assets/KIST_DRL_G1_Arch.drawio`** (3페이지 — C4_Context_Option1 · C4_Container_Option1 ·
-`Temp_KIST_DRL_G1_Cortex_v0.1`). draw.io에서 *Open from → GitHub* 로 이 파일을 직접 열어 편집·저장한다.
+**도면 원본은 `docs/_assets/KIST_DRL_G1_Arch.drawio`** (2페이지 — `C4_Context_Option1` · **`C4_Container_Option1`** = 현행 컨테이너 도면).
+draw.io에서 *Open from → GitHub* 로 이 파일을 직접 열어 편집·저장한다.
 SVG는 생성물이다:
 
 - 사이트 빌드(`docs.yml`)와 릴리스는 매번 `.drawio` 에서 SVG를 export 한다 (`svg-theme: light`).

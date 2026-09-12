@@ -54,7 +54,7 @@ jobs:
       - name: Place exported SVG (warning on failure)
         continue-on-error: true
         env:
-          C4_PAGE: Temp_KIST_DRL_G1_Cortex_v0.1
+          C4_PAGE: C4_Container_Option1
         run: |
           f=$(find docs/_assets -path '*_export*' -name "*${C4_PAGE}*.svg" | head -1)
           test -n "$f" && python tools/pin_svg_light.py "$f" docs/_assets/c4_container_architecture.svg
