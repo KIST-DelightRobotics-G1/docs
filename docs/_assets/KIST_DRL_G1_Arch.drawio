@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0" pages="3">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.2.9 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.2.9" pages="2">
   <diagram name="C4_Context_Option1" id="uPx5-QnPw7knMp94z5Yc">
     <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
@@ -100,439 +100,8 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="fGrDWbYQGmMKbfmho81V" name="C4_Container_Option1">
-    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
-      <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-        <mxCell id="sys" parent="1" style="rounded=0;fontSize=20;whiteSpace=wrap;html=1;dashed=1;arcSize=4;fillColor=none;strokeColor=#2D3A52;align=left;verticalAlign=bottom;spacing=10;dashPattern=8 4;connectable=0;" value="&lt;b&gt;DRL G1 Robot System&lt;/b&gt;&lt;div&gt;[Software System]&lt;/div&gt;" vertex="1">
-          <mxGeometry height="1250" width="2070" x="2790" y="600" as="geometry" />
-        </mxCell>
-        <mxCell id="onb" parent="1" style="rounded=0;fontSize=20;whiteSpace=wrap;html=1;dashed=1;arcSize=4;fillColor=#F3F5F8;strokeColor=#8A96AA;align=left;verticalAlign=bottom;spacing=10;dashPattern=8 4;connectable=0;" value="&lt;b&gt;Unitree G1 (NX)&lt;/b&gt;&lt;div&gt;[Onboard]&lt;/div&gt;" vertex="1">
-          <mxGeometry height="1140" width="690" x="2810" y="630" as="geometry" />
-        </mxCell>
-        <mxCell id="pc" parent="1" style="rounded=0;fontSize=20;whiteSpace=wrap;html=1;dashed=1;arcSize=4;fillColor=#F3F5F8;strokeColor=#8A96AA;align=left;verticalAlign=bottom;spacing=10;dashPattern=8 4;connectable=0;" value="&lt;b&gt;PC (RTX 4090)&lt;/b&gt;&lt;div&gt;[Workstation]&lt;/div&gt;" vertex="1">
-          <mxGeometry height="1140" width="1320" x="3520" y="630" as="geometry" />
-        </mxCell>
-        <mxCell id="kapex" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#8A96AA;fontColor=#ffffff;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;KIST KAPEX&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Person] · voice operator&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3025" y="470" as="geometry" />
-        </mxCell>
-        <mxCell id="clova" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#8A96AA;fontColor=#ffffff;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Naver CLOVA TTS&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Cloud SaaS] · speech synthesis&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3600" y="470" as="geometry" />
-        </mxCell>
-        <mxCell id="gstt" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#8A96AA;fontColor=#ffffff;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Google Cloud STT&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Cloud SaaS] · speech recognition&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3880" y="470" as="geometry" />
-        </mxCell>
-        <mxCell id="NucP1_uQ7_ntNPB_EWSK-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#8A96AA;fontColor=#ffffff;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;VLM API&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Cloud SaaS] · vision-language judge&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="4160" y="470" as="geometry" />
-        </mxCell>
-        <mxCell id="display" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#E8EAF0;fontColor=#2D3A52;strokeColor=#2D3A52;strokeWidth=2;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;cortex-gui&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Browser/JS] · display renderer&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="4560" y="470" as="geometry" />
-        </mxCell>
-        <mxCell id="g1spk" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#8A96AA;fontColor=#ffffff;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;G1 Speaker&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[built-in / AudioClient] · TTS playback&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3025" y="690" as="geometry" />
-        </mxCell>
-        <mxCell id="wQV2DsR0xtnB-WZ5CT5--3" parent="1" style="rounded=0;fontSize=20;whiteSpace=wrap;html=1;dashed=1;arcSize=4;fillColor=#E8D8BE;strokeColor=#b46504;align=left;verticalAlign=top;spacing=10;dashPattern=8 4;connectable=0;" value="" vertex="1">
-          <mxGeometry height="410" width="320" x="2995" y="865" as="geometry" />
-        </mxCell>
-        <mxCell id="wQV2DsR0xtnB-WZ5CT5--4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b style=&quot;color: rgb(45, 58, 82);&quot;&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;ext-sensor-io&lt;/font&gt;&lt;/b&gt;" vertex="1">
-          <mxGeometry height="30" width="160" x="2995" y="1245" as="geometry" />
-        </mxCell>
-        <mxCell id="es_mic" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Microphone&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[ALSA/DDS] · capture → PCM&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3025" y="895" as="geometry" />
-        </mxCell>
-        <mxCell id="es_cam" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;RealSense Camera&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[C++/DDS] · color H.264 · depth RVL + intrinsics&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3025" y="1025" as="geometry" />
-        </mxCell>
-        <mxCell id="es_uwb" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;UWB&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Decawave DWM1001] · position tracking&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3025" y="1155" as="geometry" />
-        </mxCell>
-        <mxCell id="loco" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#8A96AA;fontColor=#ffffff;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Locomotion Controller&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[G1 built-in SDK] · low-level gait &amp;amp; balance&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3025" y="1380" as="geometry" />
-        </mxCell>
-        <mxCell id="safety_ctrl" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;safety-controller&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[unitree_sdk2] watchdog&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3025" y="1560" as="geometry" />
-        </mxCell>
-        <mxCell id="cortexbox" parent="1" style="rounded=0;fontSize=20;whiteSpace=wrap;html=1;dashed=1;arcSize=4;fillColor=#C6D4E8;strokeColor=#2D3A52;fontColor=#2D3A52;align=left;verticalAlign=top;spacing=10;dashPattern=8 4;connectable=0;" value="" vertex="1">
-          <mxGeometry height="460" width="620" x="3560" y="660" as="geometry" />
-        </mxCell>
-        <mxCell id="JBP1YIXyN1buV99l_I_c-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b style=&quot;color: rgb(45, 58, 82);&quot;&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;cortex&lt;/font&gt;&lt;/b&gt;" vertex="1">
-          <mxGeometry height="30" width="90" x="3561" y="1088" as="geometry" />
-        </mxCell>
-        <mxCell id="stt" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;stt_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · speech → transcript&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3601" y="705" as="geometry" />
-        </mxCell>
-        <mxCell id="vlm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;vlm_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · scene critic → verdict&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3900" y="705" as="geometry" />
-        </mxCell>
-        <mxCell id="orch" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;orchestrator_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · scenario / sub-task engine&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3750" y="835" as="geometry" />
-        </mxCell>
-        <mxCell id="tts" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;tts_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · text → speech (CLOVA)&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3601" y="975" as="geometry" />
-        </mxCell>
-        <mxCell id="gui" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;gui_bridge_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · status &amp;amp; video WebSocket egress&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3900" y="975" as="geometry" />
-        </mxCell>
-        <mxCell id="YBPN90prjMorJIucyXqE-1" parent="1" style="rounded=0;fontSize=20;whiteSpace=wrap;html=1;dashed=1;arcSize=4;fillColor=#d0cee2;strokeColor=#666666;align=left;verticalAlign=top;spacing=10;dashPattern=8 4;connectable=0;" value="" vertex="1">
-          <mxGeometry height="460" width="620" x="3560" y="1150" as="geometry" />
-        </mxCell>
-        <mxCell id="YBPN90prjMorJIucyXqE-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b style=&quot;color: rgb(45, 58, 82);&quot;&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;gearsonic-inference&lt;/font&gt;&lt;/b&gt;" vertex="1">
-          <mxGeometry height="30" width="230" x="3561" y="1580" as="geometry" />
-        </mxCell>
-        <mxCell id="gs_nav" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;navigation-planner&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[C++ lib] · LiDAR+seg → semantic grid → path&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3600" y="1195" as="geometry" />
-        </mxCell>
-        <mxCell id="gs_ih" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Input Handler&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[C++] · goal → setpoint&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3900" y="1195" as="geometry" />
-        </mxCell>
-        <mxCell id="gs_sr" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Unitree State Reader&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[unitree_sdk2] · lowstate · dex3 subscribe&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3600" y="1330" as="geometry" />
-        </mxCell>
-        <mxCell id="gs_plan" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Planner Inference&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[TensorRT] · 10Hz motion planning&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3900" y="1330" as="geometry" />
-        </mxCell>
-        <mxCell id="gs_cmd" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Cmd Writers&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[unitree_sdk2] · lowcmd 500Hz · dex3 100Hz&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3600" y="1465" as="geometry" />
-        </mxCell>
-        <mxCell id="gs_wbc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Whole Body Controller&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[TensorRT] · Token Enc → Policy Dec&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3900" y="1465" as="geometry" />
-        </mxCell>
-        <mxCell id="Q_Y5bzPgoB8pr7Bdi4wN-2" parent="1" style="rounded=0;fontSize=20;whiteSpace=wrap;html=1;dashed=1;arcSize=4;fillColor=#b1ddf0;strokeColor=#10739e;align=left;verticalAlign=top;spacing=10;dashPattern=8 4;connectable=0;" value="" vertex="1">
-          <mxGeometry height="460" width="620" x="4200" y="1150" as="geometry" />
-        </mxCell>
-        <mxCell id="Q_Y5bzPgoB8pr7Bdi4wN-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;b style=&quot;color: rgb(45, 58, 82);&quot;&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;vla-inference&lt;/font&gt;&lt;/b&gt;" vertex="1">
-          <mxGeometry height="30" width="165" x="4200" y="1580" as="geometry" />
-        </mxCell>
-        <mxCell id="vla_src" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;IO Sources&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Python] · camera · state · operator&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="4230" y="1195" as="geometry" />
-        </mxCell>
-        <mxCell id="vla_obs" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Observation Builder&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Python] · observation assembly&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="4530" y="1195" as="geometry" />
-        </mxCell>
-        <mxCell id="vla_policy" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;GR00T N1.7 Policy&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[GPU/PyTorch] · VLA inference worker&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="4530" y="1330" as="geometry" />
-        </mxCell>
-        <mxCell id="vla_chunk" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Chunk Playback&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Python] · 50Hz · latency compensation&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="4230" y="1330" as="geometry" />
-        </mxCell>
-        <mxCell id="vla_sink" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Action Sink&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[DDS] · publishes LatentActionStep 50Hz&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="4230" y="1465" as="geometry" />
-        </mxCell>
-        <mxCell id="e1" edge="1" parent="1" source="kapex" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="es_mic" value="&lt;b&gt;Voice command&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="2822" y="510" />
-              <mxPoint x="2822" y="935" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e16" edge="1" parent="1" source="g1spk" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="kapex" value="&lt;b&gt;Voice response&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e2" edge="1" parent="1" source="es_mic" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="stt" value="&lt;b&gt;Audio PCM&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.6832" y="-5" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="3512" y="935" />
-              <mxPoint x="3512" y="745" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e15" edge="1" parent="1" source="tts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" target="g1spk" value="&lt;b&gt;Audio PCM&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.629" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="3420" y="1015" />
-              <mxPoint x="3420" y="710" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e14" edge="1" parent="1" source="tts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;startArrow=classic;endArrow=classic;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=0.31;entryY=1;entryDx=0;entryDy=0;" target="clova" value="&lt;b&gt;Text ↔ Audio&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.55" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="3578" y="995" />
-              <mxPoint x="3578" y="620" />
-              <mxPoint x="3680" y="620" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e13" edge="1" parent="1" source="stt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;startArrow=classic;endArrow=classic;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.23;entryY=1;entryDx=0;entryDy=0;" target="gstt" value="&lt;b&gt;Audio ↔ Transcript&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="3730" y="620" />
-              <mxPoint x="3940" y="620" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="NucP1_uQ7_ntNPB_EWSK-8" edge="1" parent="1" source="vlm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;startArrow=classic;endArrow=classic;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.46;entryY=1;entryDx=0;entryDy=0;" target="NucP1_uQ7_ntNPB_EWSK-3" value="&lt;b&gt;Image + Prompt ↔ Verdict&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="4030" y="620" />
-              <mxPoint x="4280" y="620" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e17" edge="1" parent="1" source="gui" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="display" value="&lt;b&gt;Camera + Task status&lt;/b&gt;&lt;div&gt;WebSocket: JPEG + JSON&lt;/div&gt;">
-          <mxGeometry relative="1" x="0.35" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="4690.06" y="1015" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e6" edge="1" parent="1" source="stt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="orch" value="&lt;b&gt;transcript&lt;/b&gt;">
-          <mxGeometry relative="1" x="-0.2857" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="3666.03" y="855.03" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e8" edge="1" parent="1" source="vlm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;" target="orch" value="&lt;b&gt;verdict&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="4030" y="810" />
-              <mxPoint x="3971" y="810" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e7" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" target="vlm" value="&lt;b&gt;subtask&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.2903" y="5" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="4095" y="855" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e9" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="tts" value="&lt;b&gt;ActionCmd (say)&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.265" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="3666.03" y="895.03" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e10" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" target="gui" value="&lt;b&gt;task_status&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.0545" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="4095" y="875" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="eext_goal" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;entryX=0.25;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="gs_nav" value="&lt;b&gt;ActionCmd (Nav)&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.3661" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="3880" y="1140" />
-              <mxPoint x="3665" y="1140" />
-            </Array>
-            <mxPoint x="3850" y="950" as="sourcePoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uUhs-C_OsoEg8yj5RCvM-1" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.12;entryY=0;entryDx=0;entryDy=0;" target="vla_src" value="&lt;b&gt;ActionCmd (Mani)&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.3" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="3880" y="1140" />
-              <mxPoint x="4261.2" y="1140" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="gse4" edge="1" parent="1" source="gs_nav" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="gs_ih" value="&lt;b&gt;NavCommand&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1" as="offset" />
-            <Array as="points">
-              <mxPoint x="3795" y="1170.06" />
-              <mxPoint x="3965" y="1170.06" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="gse3" edge="1" parent="1" source="gs_ih" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="gs_plan" value="&lt;b&gt;MovementState&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="gse1" edge="1" parent="1" source="gs_sr" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="gs_plan" value="&lt;b&gt;Unitree State&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="3795" y="1300.06" />
-              <mxPoint x="3965" y="1300.06" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="gse6" edge="1" parent="1" source="gs_plan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="gs_wbc" value="&lt;b&gt;MotionSeq 50Hz&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="gse2" edge="1" parent="1" source="gs_sr" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="gs_wbc" value="&lt;b&gt;State Logger&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="3730" y="1440" />
-              <mxPoint x="3880" y="1440" />
-              <mxPoint x="3880" y="1505" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="gse7" edge="1" parent="1" source="gs_wbc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" target="gs_cmd" value="&lt;b&gt;MotorCommand&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="1" as="offset" />
-            <Array as="points">
-              <mxPoint x="3965" y="1570.06" />
-              <mxPoint x="3795" y="1570.06" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="gse5" edge="1" parent="1" source="vla_sink" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" target="gs_wbc" value="&lt;b&gt;LatentActionStep 50Hz&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="4295" y="1440" />
-              <mxPoint x="4095" y="1440" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_vla1" edge="1" parent="1" source="vla_src" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="vla_obs" value="&lt;b&gt;sensor data&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="4425" y="1300.06" />
-              <mxPoint x="4595" y="1300.06" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_vla2" edge="1" parent="1" source="vla_obs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="vla_policy" value="&lt;b&gt;obs dict&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="e_vla3" edge="1" parent="1" source="vla_policy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" target="vla_chunk" value="&lt;b&gt;action chunk&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="4595" y="1440.06" />
-              <mxPoint x="4425" y="1440.06" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_vla4" edge="1" parent="1" source="vla_chunk" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="vla_sink" value="&lt;b&gt;step token 50Hz&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="eext_state" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="gs_sr" value="&lt;b&gt;IMU + Joint&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="3510" y="1400" />
-              <mxPoint x="3510" y="1370" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="eext_cmd" edge="1" parent="1" source="gs_cmd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" target="loco" value="&lt;b&gt;Joint cmd (rt/lowcmd · rt/dex3)&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.4" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="3664.97" y="1440" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="eext_lidar" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" target="gs_nav" value="&lt;b&gt;LiDAR PointCloud · rt/dog_odom&lt;/b&gt;">
-          <mxGeometry relative="1" x="-0.3" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="3220" y="1345" />
-              <mxPoint x="3517" y="1345" />
-              <mxPoint x="3517" y="1255" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_uwb_nav" edge="1" parent="1" source="es_uwb" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="gs_nav" value="&lt;b&gt;UWB pose&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="3500" y="1195" />
-              <mxPoint x="3500" y="1235" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_cam_nav" edge="1" parent="1" source="es_cam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="gs_nav" value="&lt;b&gt;Camera&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="3540" y="1065" />
-              <mxPoint x="3540" y="1215" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_sc_state" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.35;exitY=1;exitDx=0;exitDy=0;entryX=0.35;entryY=0;entryDx=0;entryDy=0;" target="safety_ctrl" value="&lt;b&gt;rt/lowstate&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint y="-22" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_sc_takeover" edge="1" parent="1" source="safety_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.65;exitY=0;exitDx=0;exitDy=0;entryX=0.65;entryY=1;entryDx=0;entryDy=0;" target="loco" value="&lt;b&gt;takeover RPC&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint y="22" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_sc_lowcmd" edge="1" parent="1" source="gs_cmd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="safety_ctrl" value="&lt;b&gt;rt/lowcmd (watchdog tap)&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.2052" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="3419.94" y="1525" />
-              <mxPoint x="3419.94" y="1600.06" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="evla_state" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.77;entryY=0;entryDx=0;entryDy=0;" target="vla_src" value="&lt;b&gt;rt/lowstate + rt/dex3 state&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.85" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="2990" y="1420" />
-              <mxPoint x="2990" y="1660" />
-              <mxPoint x="4810" y="1660" />
-              <mxPoint x="4810" y="1170" />
-              <mxPoint x="4430.17" y="1170" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="uUhs-C_OsoEg8yj5RCvM-2" edge="1" parent="1" source="es_cam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.38;entryY=0;entryDx=0;entryDy=0;" target="vla_src" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="2838" y="1065" />
-              <mxPoint x="2838" y="1690" />
-              <mxPoint x="4833" y="1690" />
-              <mxPoint x="4833" y="1140" />
-              <mxPoint x="4328.83" y="1140" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="cIMrLoLIK3Qq1qA13unu-2" edge="1" parent="1" source="es_cam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.73;entryY=1;entryDx=0;entryDy=0;" target="gui" value="">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="2838" y="1065" />
-              <mxPoint x="2838" y="1690" />
-              <mxPoint x="4833" y="1690" />
-              <mxPoint x="4833" y="1090" />
-              <mxPoint x="4089.83" y="1090" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="zibqCbY97YaWc8xZ2RZ7-3" connectable="0" parent="cIMrLoLIK3Qq1qA13unu-2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;b style=&quot;color: rgb(45, 58, 82); font-size: 14px;&quot;&gt;Camera&lt;/b&gt;" vertex="1">
-          <mxGeometry relative="1" x="0.919" y="1" as="geometry">
-            <mxPoint x="-1" as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="cIMrLoLIK3Qq1qA13unu-1" edge="1" parent="1" source="es_cam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" target="vlm" value="&lt;b&gt;Camera&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.901" y="415" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="2838" y="1065" />
-              <mxPoint x="2838" y="1690" />
-              <mxPoint x="4833" y="1690" />
-              <mxPoint x="4833" y="725" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="zibqCbY97YaWc8xZ2RZ7-4" connectable="0" parent="cIMrLoLIK3Qq1qA13unu-1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;b style=&quot;color: rgb(45, 58, 82); font-size: 14px;&quot;&gt;Camera&lt;/b&gt;" vertex="1">
-          <mxGeometry relative="1" x="0.9697" y="1" as="geometry">
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
-  <diagram id="ubg03o74-CbSNtMAiLNK" name="Temp_KIST_DRL_G1_Cortex_v0.1">
-    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <diagram id="ubg03o74-CbSNtMAiLNK" name="C4_Container_Option1">
+    <mxGraphModel dx="-282" dy="1238" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -615,7 +184,7 @@
           <mxGeometry height="30" width="230" x="3561" y="1580" as="geometry" />
         </mxCell>
         <mxCell id="gs_nav" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;navigation-planner&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[C++/DDS] · LiDAR+seg → semantic grid → cmd_vel&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3600" y="1650" as="geometry" />
+          <mxGeometry height="80" width="260" x="3600" y="1195" as="geometry" />
         </mxCell>
         <mxCell id="gs_ih" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Input Handler&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[C++] · goal → setpoint&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="260" x="3900" y="1195" as="geometry" />
@@ -768,6 +337,10 @@
         <mxCell id="eext_goal" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;entryX=0.25;entryY=0;entryDx=0;entryDy=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" target="gs_nav" value="&lt;b&gt;ActionCmd (Nav)&lt;/b&gt;">
           <mxGeometry relative="1" x="0.3661" as="geometry">
             <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="3945" y="1140" />
+              <mxPoint x="3665" y="1140" />
+            </Array>
             <mxPoint x="3850" y="950" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
@@ -792,6 +365,10 @@
         <mxCell id="gse4" edge="1" parent="1" source="gs_nav" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="gs_ih" value="&lt;b&gt;rt/kist/nav/cmd_vel (Twist)&lt;/b&gt;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1" as="offset" />
+            <Array as="points">
+              <mxPoint x="3795" y="1170" />
+              <mxPoint x="3965" y="1170" />
+            </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="gse3" edge="1" parent="1" source="gs_ih" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="gs_plan" value="&lt;b&gt;MovementState&lt;/b&gt;">
@@ -872,17 +449,29 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="eext_lidar" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" target="gs_nav" value="&lt;b&gt;LiDAR PointCloud · rt/dog_odom&lt;/b&gt;">
+        <mxCell id="eext_lidar" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="gs_nav" value="&lt;b&gt;LiDAR PointCloud · rt/dog_odom&lt;/b&gt;">
           <mxGeometry relative="1" x="-0.3" as="geometry">
             <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="3220" y="1310" />
+              <mxPoint x="3665" y="1310" />
+            </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e_uwb_nav" edge="1" parent="1" source="es_uwb" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="gs_nav" value="&lt;b&gt;UWB pose&lt;/b&gt;">
+        <mxCell id="e_uwb_nav" edge="1" parent="1" source="es_uwb" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;entryX=0;entryY=0.75;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="gs_nav" value="&lt;b&gt;UWB pose&lt;/b&gt;">
           <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="3155" y="1255" />
+            </Array>
+            <mxPoint x="3220" y="1260" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="e_cam_nav" edge="1" parent="1" source="es_cam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="gs_nav" value="&lt;b&gt;Camera&lt;/b&gt;">
           <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="3443" y="1065" />
+              <mxPoint x="3443" y="1215" />
+            </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="e_sc_state" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.35;exitY=1;exitDx=0;exitDy=0;entryX=0.35;entryY=0;entryDx=0;entryDy=0;" target="safety_ctrl" value="&lt;b&gt;rt/lowstate&lt;/b&gt;">
