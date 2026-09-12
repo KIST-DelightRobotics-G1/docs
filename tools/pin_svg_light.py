@@ -15,8 +15,11 @@ from pathlib import Path
 
 def pin_light(svg: str) -> tuple[str, dict]:
     stats = {}
-    stats["color-scheme"] = svg.count("color-scheme: light dark;")
-    svg = svg.replace("color-scheme: light dark;", "")
+    # 웹 export: "color-scheme: light dark;" / 데스크톱(CLI) export: 세미콜론·공백이 다르거나
+    # 속성(color-scheme="light dark")으로 나온다. 모든 형태를 지운다.
+    svg, n_style = re.subn(r"color-scheme\s*:\s*light\s+dark\s*;?", "", svg)
+    svg, n_attr = re.subn(r'\s+color-scheme="[^"]*"', "", svg)
+    stats["color-scheme"] = n_style + n_attr
 
     def first_arg(m: re.Match) -> str:
         inner, depth, first = m.group(1), 0, ""
