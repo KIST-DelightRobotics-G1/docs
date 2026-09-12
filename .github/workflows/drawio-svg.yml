@@ -42,7 +42,12 @@ jobs:
       - name: Pick the C4 page and pin light colours
         run: |
           f=$(find docs/_assets -path '*_export*' -name "*${C4_PAGE}*.svg" | head -1)
-          test -n "$f" || { echo "::error::page ${C4_PAGE} not exported"; ls -R docs/_assets | head -40; exit 1; }
+          if [ -z "$f" ]; then
+            # 페이지 이름이 바뀐 경우: "Container" 가 들어간 페이지로 폴백 (경고만)
+            f=$(find docs/_assets -path '*_export*' -iname "*Container*.svg" | head -1)
+            [ -n "$f" ] && echo "::warning::page ${C4_PAGE} not found — using $(basename "$f"); update C4_PAGE in the workflows"
+          fi
+          test -n "$f" || { echo "::error::no C4 container page exported"; ls -R docs/_assets | head -40; exit 1; }
           python tools/pin_svg_light.py "$f" docs/_assets/c4_container_architecture.svg
           sudo rm -rf docs/_assets/_export   # docker 액션이 root 소유로 만든다
 

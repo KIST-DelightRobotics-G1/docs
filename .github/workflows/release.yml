@@ -57,6 +57,7 @@ jobs:
           C4_PAGE: C4_Container_Option1
         run: |
           f=$(find docs/_assets -path '*_export*' -name "*${C4_PAGE}*.svg" | head -1)
+          [ -z "$f" ] && f=$(find docs/_assets -path '*_export*' -iname "*Container*.svg" | head -1)
           test -n "$f" && python tools/pin_svg_light.py "$f" docs/_assets/c4_container_architecture.svg
           sudo rm -rf docs/_assets/_export   # docker 액션이 root 소유로 만든다
 
