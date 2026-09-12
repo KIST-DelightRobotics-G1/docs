@@ -56,7 +56,8 @@ def main() -> int:
     out, stats = pin_light(svg)
     dst.parent.mkdir(parents=True, exist_ok=True)
     io.open(dst, "w", encoding="utf-8", newline="\n").write(out)
-    left = [w for w in ("light-dark(", "var(--ge-", "color-scheme") if w in out]
+    # "color-scheme: light" (CLI export, 라이트 고정) 는 무해하다 — 다크 참조만 잡는다.
+    left = [w for w in ("light-dark(", "var(--ge-", "light dark", "prefers-color-scheme") if w in out]
     print(f"{src} -> {dst}: {stats}; remaining dark refs: {left or 'none'}")
     return 1 if left else 0
 
