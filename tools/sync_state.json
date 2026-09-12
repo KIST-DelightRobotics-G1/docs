@@ -1,0 +1,13 @@
+{
+  "cortex": "7de9c54db7a5dd05557b2fa04e7405b4a452473d",
+  "cortex-gui": "0e2153f925d02610f3c62954095330fe9370be89",
+  "data-collector": "033cca22f1538ca25b43043a8c8dc0e2b946c575",
+  "docs": "7702fa0891c088223dd0e94b2c11d86df89b2be4",
+  "ext-sensor-io": "94848e6989d1b10a36aa2651e9c91375e2875972",
+  "gearsonic-inference": "a40e137d6d992e1e6119ea82deb797b2f73229dd",
+  "interface-msgs": "b732e2ff7c46e7c174bf49b5add12ddae2c25e9d",
+  "navigation-planner": "d6314a18fa6fb7302fbbc8edb88a0dd266043dcd",
+  "safety-controller": "265532b13cd6488c8158b9da34fd8d78fc8b08be",
+  "vision-training": "9f43d6c43048f30eb7836f55933c1263e355ae25",
+  "vla-inference": "dc7d108a79dcd31abfed71bddfe5c9605a2f211e"
+}

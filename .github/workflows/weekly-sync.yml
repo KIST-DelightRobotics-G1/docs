@@ -1,0 +1,61 @@
+# 주간 변경 감지 — 매주 월요일 09:00 KST (00:00 UTC).
+#
+# org 전 레포의 main 을 tools/sync_state.json 의 마지막 동기화 SHA 와 비교해
+# 커밋 목록 + 문서/도면에 영향을 줄 신호(새 토픽, pub/sub 코드, 파일 이동,
+# File 관계 파손)를 뽑아 Issue 로 올린다. 판단·반영은 사람이 `/g1-sync` 로 한다.
+#
+# 변경이 하나도 없으면 Issue 를 만들지 않는다.
+
+name: weekly-sync
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Detect changes since last sync
+        id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python tools/sync_repos.py --report sync_report.md --json sync.json
+          if grep -q "변경이 없습니다" sync_report.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "title=$(head -1 sync_report.md | sed 's/^# //')" >> "$GITHUB_OUTPUT"
+
+      - name: Open sync issue
+        if: steps.detect.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "${{ steps.detect.outputs.title }}" \
+            --label "sync" \
+            --body-file sync_report.md || \
+          gh issue create \
+            --title "${{ steps.detect.outputs.title }}" \
+            --body-file sync_report.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sync-report
+          path: |
+            sync_report.md
+            sync.json

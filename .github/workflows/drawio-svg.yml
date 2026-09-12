@@ -1,0 +1,56 @@
+# .drawio 원본이 main 에서 바뀌면 C4 조감도 SVG 를 다시 export 해 커밋한다.
+#
+# 도면의 원본은 docs/_assets/KIST_DRL_G1_Arch.drawio (draw.io 로 GitHub 에서 직접 열어 편집).
+# SVG 는 생성물이지만 로컬 빌드 편의를 위해 함께 커밋해 둔다. 사이트 빌드(docs.yml)는
+# 매번 .drawio 에서 새로 export 하므로 이 커밋이 늦어도 사이트는 항상 최신이다.
+#
+# GITHUB_TOKEN 으로 push 한 커밋은 다른 워크플로를 트리거하지 않는다 (무한 루프 방지).
+
+name: drawio-svg
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs/_assets/*.drawio", "tools/pin_svg_light.py"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  C4_PAGE: Temp_KIST_DRL_G1_Cortex_v0.1
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: rlespinasse/drawio-export-action@v2
+        with:
+          path: docs/_assets
+          format: svg
+          output: _export
+          svg-theme: light
+          embed-diagram: true
+          action-mode: all
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Pick the C4 page and pin light colours
+        run: |
+          f=$(find docs/_assets -path '*_export*' -name "*${C4_PAGE}*.svg" | head -1)
+          test -n "$f" || { echo "::error::page ${C4_PAGE} not exported"; ls -R docs/_assets | head -40; exit 1; }
+          python tools/pin_svg_light.py "$f" docs/_assets/c4_container_architecture.svg
+          rm -rf docs/_assets/_export
+
+      - name: Commit regenerated SVG
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/_assets/c4_container_architecture.svg
+          git diff --cached --quiet && { echo "svg unchanged"; exit 0; }
+          git commit -m "[chore] docs(assets): regenerate C4 SVG from .drawio"
+          git push

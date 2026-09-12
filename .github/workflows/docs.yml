@@ -45,6 +45,26 @@ jobs:
         continue-on-error: true
         run: python tools/gen_arch.py --check
 
+      # C4 조감도를 .drawio 원본에서 export 한다 (실패 시 커밋된 SVG 로 빌드).
+      - name: Export C4 SVG from .drawio (warning on failure)
+        continue-on-error: true
+        uses: rlespinasse/drawio-export-action@v2
+        with:
+          path: docs/_assets
+          format: svg
+          output: _export
+          svg-theme: light
+          embed-diagram: true
+          action-mode: all
+      - name: Place exported SVG (warning on failure)
+        continue-on-error: true
+        env:
+          C4_PAGE: Temp_KIST_DRL_G1_Cortex_v0.1
+        run: |
+          f=$(find docs/_assets -path '*_export*' -name "*${C4_PAGE}*.svg" | head -1)
+          test -n "$f" && python tools/pin_svg_light.py "$f" docs/_assets/c4_container_architecture.svg
+          rm -rf docs/_assets/_export
+
       # File 관계가 가리키는 구현 파일. 한 레포를 못 받아도 빌드는 계속된다.
       - name: Fetch source repos into _src/
         run: python tools/fetch_sources.py
