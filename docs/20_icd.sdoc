@@ -1,8 +1,8 @@
 [DOCUMENT]
 TITLE: KIST DRL G1 인터페이스 정의서 (ICD)
 UID: DOC-ICD
-VERSION: 0.2
-DATE: 2026-09-06
+VERSION: 0.3
+DATE: 2026-09-12
 CLASSIFICATION: Internal
 OPTIONS:
   MARKUP: RST
@@ -23,7 +23,7 @@ STATEMENT: >>>
 
 .. note::
 
-   본 문서는 Notion ``ICD`` 데이터베이스(22건)를 이관한 것이며, UID 번호는 Notion 시절
+   본 문서는 Notion ``ICD`` 데이터베이스(22건)를 이관한 것이며(이후 ICD-72부터는 코드 동기화로 추가), UID 번호는 Notion 시절
    Interface ID를 그대로 잇는다. Notion의 선택지 값 중 괄호가 있는 것은 StrictDoc 문법상
    ``Getter (Pull)`` → ``Getter``, ``Call (Push)`` → ``Call`` 로 정규화하였다.
 <<<
@@ -353,8 +353,10 @@ named goal(nav) / manip 지시 텍스트. orchestrator의 ``navigation`` / ``vla
 <<<
 PRECONDITION: gearsonic goal 어댑터 신설 필요
 COMMENT: >>>
-⚠ **수신측 미구현(gap).** gearsonic에 ActionCmd 수신부가 없다 — nav는 InputHandler ``nav_buf``,
-manip은 vla-inference operator 채널(``prompt:<text>``)로 변환하는 어댑터가 필요하다.
+⚠ **수신측 미구현(gap).** gearsonic에 ActionCmd 수신부가 없다. nav 경로는 gearsonic 쪽에
+``rt/kist/nav/cmd_vel`` 수신부(ICD-72)가 생겼으므로, 남은 것은 orchestrator → navigation-planner 목표 전달과
+navigation-planner 의 cmd_vel 발행이다. manip은 vla-inference operator 채널(``prompt:<text>``)로 변환하는
+어댑터가 필요하다.
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -370,6 +372,38 @@ RELATIONS:
   VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
 - TYPE: File
   VALUE: _src/cortex/src/cortex_msgs/msg/ActionCmd.msg
+
+[ICD]
+UID: ICD-72
+TITLE: Nav Cmd Vel (nav-planner → gearsonic)
+COMM_TYPE: DDS Topic
+SOURCE: nav-planner
+TARGET: gearsonic
+TOPIC: rt/kist/nav/cmd_vel
+MSG_TYPE: geometry_msgs/Twist
+QOS: N/A
+FREQUENCY: ~20 Hz (계획 주기)
+STATEMENT: >>>
+``linear.x = vx``, ``linear.y = vy``, ``angular.z = vyaw`` — base 좌표계 속도 명령.
+gearsonic의 ``NavCmdReceiver`` 가 수신해 ``InputHandler::nav_buf`` 에 넣고, 조종기 스틱이 중립일 때
+플래너 setpoint로 쓴다. NaN/Inf 명령은 거부한다. vx·vy를 모두 소비하므로 옆걸음을 지원한다.
+<<<
+PRECONDITION: gearsonic 실행 + 스틱 중립 + E-STOP 미발효
+COMMENT: >>>
+**발행측 미구현** — navigation-planner 에 ``rt/kist/nav/cmd_vel`` 발행 코드가 아직 없다 (gearsonic 수신부만 선행,
+gearsonic ``0c5f8d3``). QoS는 발행측이 정한다. 이 인터페이스가 생기면서 nav-planner → gearsonic 경로는
+in-process 라이브러리 호출이 아니라 DDS 토픽이 된다.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-45
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/gearsonic-inference/src/motion/nav_cmd_receiver.cpp
+- TYPE: File
+  VALUE: _src/gearsonic-inference/include/motion/nav_cmd_receiver.hpp
+- TYPE: File
+  VALUE: _src/gearsonic-inference/src/motion/input_handler.cpp
 
 [[/SECTION]]
 
@@ -621,7 +655,11 @@ STATEMENT: >>>
 CRC32 검증.
 <<<
 PRECONDITION: G1 전원 · DDS 활성
-COMMENT: 소비처 3곳 — gearsonic(제어) · vla-inference(정책 관측, 직접 구독) · safety-controller(로봇 생존 감시).
+COMMENT: >>>
+소비처 4곳 — gearsonic(제어) · gearsonic ``MotorHealthMonitor`` (fault word · 케이싱/권선 온도 · 토크 정합 감시,
+**로그 전용, E-STOP 발효 없음**; gearsonic ``b899bb7`` ``975c3d5``) · vla-inference(정책 관측, 직접 구독) ·
+safety-controller(로봇 생존 감시).
+<<<
 RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-32
@@ -629,8 +667,13 @@ RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-31
   ROLE: Implements
+- TYPE: Parent
+  VALUE: SYS-REQ-35
+  ROLE: Implements
 - TYPE: File
   VALUE: _src/gearsonic-inference/src/unitree/unitree_state_reader.cpp
+- TYPE: File
+  VALUE: _src/gearsonic-inference/src/unitree/motor_health_monitor.cpp
 - TYPE: File
   VALUE: _src/vla-inference/src/vla/io/unitree/unitree_state_reader.py
 - TYPE: File
@@ -707,7 +750,8 @@ MSG_TYPE: unitree dex3 hand cmd (raw DDS)
 QOS: Reliable
 FREQUENCY: 100 Hz
 STATEMENT: >>>
-양손 손가락 7모터 명령 (좌/우 개별 토픽).
+양손 손가락 7모터 명령 (좌/우 개별 토픽). 상태 피드백(ICD-73)이 있으면 ``HandGuard`` 를 거쳐
+정지 토크가 제한된 명령이 나간다.
 <<<
 PRECONDITION: gearsonic Hand Cmd Writer 활성
 RELATIONS:
@@ -721,5 +765,40 @@ RELATIONS:
   VALUE: _src/gearsonic-inference/src/unitree/hand_command_writer.cpp
 - TYPE: File
   VALUE: _src/gearsonic-inference/include/unitree/hand_command.hpp
+- TYPE: File
+  VALUE: _src/gearsonic-inference/include/unitree/hand_guard.hpp
+
+[ICD]
+UID: ICD-73
+TITLE: Dex3 Hand State (G1 → gearsonic)
+COMM_TYPE: DDS Topic
+SOURCE: G1
+TARGET: gearsonic
+TOPIC: rt/dex3/{left,right}/state
+MSG_TYPE: unitree_hg/HandState (raw DDS)
+QOS: BestEffort
+FREQUENCY: source-rate
+STATEMENT: >>>
+양손 7모터의 ``q`` / ``dq`` / ``tau_est`` + 케이싱·권선 온도. ``HandStateReader`` 가 좌/우 토픽을 구독해
+``HandState`` 버퍼에 latch 한다(별도 스레드 없음).
+
+소비처: ``HandGuard`` (막힘 시 ``q_cmd = q_meas + clamp(q_des − q_meas, ±tau_max/kp)`` 로 정지 토크 상한,
+오차·정지 시간 기반 stall 래치, 온도 즉시 래치) · ``MotorHealthMonitor`` (온도·fault 감시).
+<<<
+PRECONDITION: Dex3 핸드 전원 · DDS 활성
+COMMENT: 상태가 없거나 stale 이면 HandCommandWriter 는 기존 open-loop 로 통과한다 (gearsonic ``fdc9480``).
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-32
+  ROLE: Implements
+- TYPE: Parent
+  VALUE: SYS-REQ-35
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/gearsonic-inference/src/unitree/hand_state_reader.cpp
+- TYPE: File
+  VALUE: _src/gearsonic-inference/include/unitree/hand_guard.hpp
+- TYPE: File
+  VALUE: _src/gearsonic-inference/src/unitree/hand_command_writer.cpp
 
 [[/SECTION]]

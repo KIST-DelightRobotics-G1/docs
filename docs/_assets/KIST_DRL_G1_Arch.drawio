@@ -793,7 +793,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="gse4" edge="1" parent="1" source="gs_nav" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="gs_ih" value="&lt;b&gt;NavCommand&lt;/b&gt;">
+        <mxCell id="gse4" edge="1" parent="1" source="gs_nav" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="gs_ih" value="&lt;b&gt;rt/kist/nav/cmd_vel (Twist)&lt;/b&gt;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1" as="offset" />
             <Array as="points">
@@ -864,7 +864,7 @@
         <mxCell id="e_vla4" edge="1" parent="1" source="vla_chunk" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="vla_sink" value="&lt;b&gt;step token 50Hz&lt;/b&gt;">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="eext_state" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="gs_sr" value="&lt;b&gt;IMU + Joint&lt;/b&gt;">
+        <mxCell id="eext_state" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="gs_sr" value="&lt;b&gt;IMU + Joint · rt/dex3 state&lt;/b&gt;">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="3510" y="1400" />

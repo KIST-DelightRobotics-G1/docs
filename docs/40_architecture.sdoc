@@ -28,7 +28,7 @@ ICD를 수정한 뒤 위 명령을 다시 실행하면 다이어그램이 갱신
 CI에서 ``python tools/gen_arch.py --check`` 를 돌리면
 "ICD는 바뀌었는데 다이어그램은 안 바뀐" 상태를 빌드 실패로 잡을 수 있다.
 
-현재 인터페이스 22건.
+현재 인터페이스 24건.
 <<<
 
 [[SECTION]]
@@ -181,6 +181,7 @@ STATEMENT: >>>
           n_vlm_node["vlm_node"]
           n_orchestrator_node["orchestrator_node"]
           n_gearsonic["gearsonic"]
+          n_nav_planner["nav-planner"]
         end
         subgraph external["External"]
           n_VLM_API["VLM API"]
@@ -190,6 +191,7 @@ STATEMENT: >>>
         n_vlm_node -->|"ICD-66"| n_orchestrator_node
         n_vlm_node -.->|"ICD-71"| n_VLM_API
         n_orchestrator_node -->|"ICD-70"| n_gearsonic
+        n_nav_planner -->|"ICD-72"| n_gearsonic
    </pre>
    </div>
 
@@ -217,6 +219,10 @@ STATEMENT: >>>
      - orchestrator_node
      - gearsonic
      - ``(미정) ActionCmd``
+   * - ICD-72
+     - nav-planner
+     - gearsonic
+     - ``rt/kist/nav/cmd_vel``
 
 <<<
 
@@ -345,6 +351,7 @@ STATEMENT: >>>
         n_G1 -->|"ICD-41"| n_gearsonic
         n_gearsonic -->|"ICD-50"| n_G1
         n_gearsonic -->|"ICD-6"| n_G1
+        n_G1 -->|"ICD-73"| n_gearsonic
    </pre>
    </div>
 
@@ -372,6 +379,10 @@ STATEMENT: >>>
      - gearsonic
      - G1
      - ``rt/dex3/{left,right}/cmd``
+   * - ICD-73
+     - G1
+     - gearsonic
+     - ``rt/dex3/{left,right}/state``
 
 <<<
 
