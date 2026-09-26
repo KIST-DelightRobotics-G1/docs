@@ -298,12 +298,12 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="eext_goal" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;entryX=0.25;entryY=0;entryDx=0;entryDy=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" target="gs_nav" value="&lt;b&gt;SubtaskCmd&lt;/b&gt;">
+        <mxCell id="eext_goal" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" target="gs_nav" value="&lt;b&gt;SubtaskCmd&lt;/b&gt;">
           <mxGeometry relative="1" x="0.3661" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
               <mxPoint x="3945" y="1140" />
-              <mxPoint x="3665" y="1140" />
+              <mxPoint x="3730" y="1140" />
             </Array>
             <mxPoint x="3850" y="950" as="sourcePoint" />
           </mxGeometry>
@@ -326,8 +326,14 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e_state_nav" edge="1" parent="1" source="gs_nav" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.6;exitY=0;exitDx=0;exitDy=0;entryX=0.35;entryY=1;entryDx=0;entryDy=0;" target="orch" value="&lt;b&gt;SubtaskState 10 Hz&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="e_state_nav" edge="1" parent="1" source="gs_nav" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="orch" value="&lt;b&gt;SubtaskState 10 Hz&lt;/b&gt;">
+          <mxGeometry relative="1" x="-0.232" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="3665" y="1090" />
+              <mxPoint x="4010" y="1090" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="gse4" edge="1" parent="1" source="gs_nav" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="gs_ih" value="&lt;b&gt;rt/kist/nav/cmd_vel (Twist)&lt;/b&gt;">
           <mxGeometry relative="1" as="geometry">
