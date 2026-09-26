@@ -28,7 +28,7 @@ ICD를 수정한 뒤 위 명령을 다시 실행하면 다이어그램이 갱신
 CI에서 ``python tools/gen_arch.py --check`` 를 돌리면
 "ICD는 바뀌었는데 다이어그램은 안 바뀐" 상태를 빌드 실패로 잡을 수 있다.
 
-현재 인터페이스 24건.
+현재 인터페이스 32건.
 <<<
 
 [[SECTION]]
@@ -135,6 +135,7 @@ STATEMENT: >>>
         n_tts_node -.->|"ICD-34"| n_Naver_CLOVA_TTS
         n_tts_node -->|"ICD-8"| n_speaker_node
         n_orchestrator_node -->|"ICD-69"| n_tts_node
+        n_orchestrator_node -->|"ICD-83"| n_tts_node
    </pre>
    </div>
 
@@ -162,6 +163,10 @@ STATEMENT: >>>
      - orchestrator_node
      - tts_node
      - ``/cortex/tts/stop``
+   * - ICD-83
+     - orchestrator_node
+     - tts_node
+     - ``/cortex/tts/prefetch · /cortex/tts/warmup``
 
 <<<
 
@@ -178,19 +183,26 @@ STATEMENT: >>>
    <pre class="mermaid">
       flowchart TB
         subgraph workstation["PC (RTX 4090) — Workstation"]
-          n_vlm_node["vlm_node"]
           n_orchestrator_node["orchestrator_node"]
           n_gearsonic["gearsonic"]
           n_nav_planner["nav-planner"]
+          n_Cortex["Cortex"]
         end
-        subgraph external["External"]
-          n_VLM_API["VLM API"]
-        end
+        n_Gemini_API["Gemini API (구역 미지정)"]
+        n_detector_node["detector_node (구역 미지정)"]
+        n_llm_node["llm_node (구역 미지정)"]
+        n_vla_inference["vla-inference (구역 미지정)"]
 
-        n_orchestrator_node -->|"ICD-65"| n_vlm_node
-        n_vlm_node -->|"ICD-66"| n_orchestrator_node
-        n_vlm_node -.->|"ICD-71"| n_VLM_API
-        n_orchestrator_node -->|"ICD-70"| n_gearsonic
+        n_orchestrator_node -->|"ICD-70"| n_nav_planner
+        n_nav_planner -->|"ICD-74"| n_orchestrator_node
+        n_orchestrator_node -->|"ICD-75"| n_vla_inference
+        n_vla_inference -->|"ICD-76"| n_orchestrator_node
+        n_orchestrator_node -->|"ICD-77"| n_llm_node
+        n_llm_node -->|"ICD-78"| n_orchestrator_node
+        n_orchestrator_node -->|"ICD-79"| n_detector_node
+        n_llm_node -.->|"ICD-81"| n_Gemini_API
+        n_nav_planner -->|"ICD-82"| n_orchestrator_node
+        n_detector_node -->|"ICD-84"| n_Cortex
         n_nav_planner -->|"ICD-72"| n_gearsonic
    </pre>
    </div>
@@ -203,22 +215,46 @@ STATEMENT: >>>
      - 송신
      - 수신
      - 토픽 / 엔드포인트
-   * - ICD-65
-     - orchestrator_node
-     - vlm_node
-     - ``/cortex/active_subtask``
-   * - ICD-66
-     - vlm_node
-     - orchestrator_node
-     - ``/cortex/critic/verdict``
-   * - ICD-71
-     - vlm_node
-     - VLM API
-     - ``REST API (TBD)``
    * - ICD-70
      - orchestrator_node
-     - gearsonic
-     - ``(미정) ActionCmd``
+     - nav-planner
+     - ``rt/cortex/nav/cmd``
+   * - ICD-74
+     - nav-planner
+     - orchestrator_node
+     - ``rt/cortex/nav/state``
+   * - ICD-75
+     - orchestrator_node
+     - vla-inference
+     - ``rt/cortex/vla/cmd``
+   * - ICD-76
+     - vla-inference
+     - orchestrator_node
+     - ``rt/cortex/vla/state``
+   * - ICD-77
+     - orchestrator_node
+     - llm_node
+     - ``/cortex/llm/request``
+   * - ICD-78
+     - llm_node
+     - orchestrator_node
+     - ``/cortex/llm/step``
+   * - ICD-79
+     - orchestrator_node
+     - detector_node
+     - ``/cortex/detector/check``
+   * - ICD-81
+     - llm_node
+     - Gemini API
+     - ``google-genai streaming``
+   * - ICD-82
+     - nav-planner
+     - orchestrator_node
+     - ``rt/kist/nav/destinations``
+   * - ICD-84
+     - detector_node
+     - Cortex
+     - ``/cortex/detections``
    * - ICD-72
      - nav-planner
      - gearsonic
@@ -242,16 +278,17 @@ STATEMENT: >>>
           n_ext_sensor_io["ext-sensor-io"]
         end
         subgraph workstation["PC (RTX 4090) — Workstation"]
-          n_vlm_node["vlm_node"]
           n_orchestrator_node["orchestrator_node"]
           n_gui_bridge_node["gui_bridge_node"]
         end
         subgraph external["External"]
           n_Display_Renderer["Display Renderer"]
         end
+        n_detector_node["detector_node (구역 미지정)"]
 
-        n_ext_sensor_io -->|"ICD-62"| n_vlm_node
+        n_ext_sensor_io -->|"ICD-62"| n_detector_node
         n_orchestrator_node -->|"ICD-67"| n_gui_bridge_node
+        n_orchestrator_node -->|"ICD-80"| n_gui_bridge_node
         n_gui_bridge_node -.->|"ICD-55"| n_Display_Renderer
    </pre>
    </div>
@@ -266,12 +303,16 @@ STATEMENT: >>>
      - 토픽 / 엔드포인트
    * - ICD-62
      - ext-sensor-io
-     - vlm_node
+     - detector_node
      - ``rt/kist/camera/<name>/color/h264``
    * - ICD-67
      - orchestrator_node
      - gui_bridge_node
      - ``/cortex/task_status``
+   * - ICD-80
+     - orchestrator_node
+     - gui_bridge_node
+     - ``/cortex/trace``
    * - ICD-55
      - gui_bridge_node
      - Display Renderer

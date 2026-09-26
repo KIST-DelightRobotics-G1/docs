@@ -69,13 +69,15 @@ UID: TC-102
 TITLE: 냉장고 접근 (approach_fridge)
 METHOD: Demonstration
 STATEMENT: >>>
-1. sub-task ``approach_fridge`` 가 ``goal:refrigerator`` 이동 명령을 발사한다.
+1. 발화 "냉장고에서 오이 하나 가져다줘" 에서 LLM 이 첫 subtask ``move_to(fridge)`` 를 내고,
+   오케스트레이터가 END 를 기다리지 않고 바로 발사한다 (ICD-77 · ICD-78 · ICD-70).
 2. G1이 조리대에서 냉장고 앞까지 자율 보행한다.
-3. 도착 후 VLM이 "robot is facing the refrigerator door" 를 판정한다.
+3. nav 이 ``SubtaskState`` 를 ``DONE`` 으로 돌려주고, 오케스트레이터가 ``at`` 을 ``fridge`` 로 갱신한다.
 <<<
 EXPECTED: >>>
-G1이 장애물과 충돌 없이 냉장고 정면에 정지하고, VLM 판정이 통과되어 다음 sub-task로 진행한다.
-timeout(25 s) 내에 도달하지 못하면 "냉장고로 이동하지 못했습니다" 안내 후 실패 처리된다.
+G1이 장애물과 충돌 없이 냉장고 정면에 정지하고, ``DONE`` 수신 후 다음 subtask 로 진행한다.
+step timeout(nav 60 s) 내에 도달하지 못하거나 ``FAILED`` 가 오면 "냉장고로 이동하지 못했습니다"
+안내 후 계획을 중단하고, ``at`` 은 ``unknown`` 으로 되돌아간다.
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -96,13 +98,17 @@ UID: TC-103
 TITLE: 냉장고 문 개방 (open_door)
 METHOD: Demonstration
 STATEMENT: >>>
-1. sub-task ``open_door`` 가 VLA 명령 "Open the refrigerator door with the left hand." 를 발사한다.
-2. VLA 정책이 카메라·관절 상태로부터 전신 동작을 생성하고, 균형 보정을 거쳐 관절 명령으로 실행된다.
-3. VLM이 "refrigerator door is open" 을 판정한다.
+1. 조작 직전에 오케스트레이터가 ``CheckTarget(fridge_door)`` 로 대상이 지금 보이는지 확인한다 (ICD-79).
+2. 확인되면 ``open(fridge_door)`` 을 ``instruction`` "Open the refrigerator door." 와 함께 VLA 로 발사한다 (ICD-75).
+3. VLA 정책이 카메라·관절 상태로부터 전신 동작을 생성하고, 균형 보정을 거쳐 관절 명령으로 실행된다.
 <<<
 EXPECTED: >>>
-G1이 균형을 잃지 않고 왼손으로 문을 열며, 동작 중 관절 명령이 끊기거나 급격히 튀지 않는다.
-VLM 판정이 통과되어 다음 sub-task로 진행한다.
+G1이 균형을 잃지 않고 문을 열며, 동작 중 관절 명령이 끊기거나 급격히 튀지 않는다.
+VLA 가 ``DONE`` 을 돌려주면 다음 subtask 로 진행한다.
+
+사전 확인이 "안 보임" 이면 "냉장고 문이 보이지 않습니다" 안내 후 계획을 중단한다. 검출기가
+없거나 프레임이 없어 **판정 자체가 불가능한 경우는 진행한다**\ (fail-open) — 판정기 고장으로
+로봇이 서 버리는 쪽이 더 나쁘다.
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -126,14 +132,19 @@ UID: TC-104
 TITLE: 오이 파지 (grasp_cucumber)
 METHOD: Demonstration
 STATEMENT: >>>
-1. sub-task ``grasp_cucumber`` 가 VLA 명령 "Pick up the cucumber from the top shelf." 를 발사한다.
-2. G1이 선반 위 오이를 인식하고 오른손으로 파지한다.
-3. VLM이 "a cucumber is held in the right gripper" 를 판정한다.
+1. ``CheckTarget(cucumber)`` 로 오이가 보이는지 확인한 뒤 ``take_out(cucumber, fridge)`` 를
+   ``instruction`` "Take the cucumber out of the refrigerator." 와 함께 발사한다.
+2. G1이 오이를 인식하고 파지한다.
+3. VLA 가 ``DONE`` 을 돌려주면 오케스트레이터가 ``holding`` 을 ``cucumber`` 로 갱신한다.
 <<<
 EXPECTED: >>>
-오이가 떨어뜨려지지 않고 그리퍼에 유지된 상태로 VLM 판정이 통과된다.
+오이가 떨어뜨려지지 않고 그리퍼에 유지된 상태로 ``DONE`` 이 오고, ``holding`` 이 갱신된다.
+``FAILED`` 면 ``holding`` 은 ``none`` 으로 남아, 다음 계획이 집기를 다시 넣어 회복한다.
 <<<
-COMMENT: 파지 판정은 향후 joint_state(기하) AND vlm(의미) composite 로 강화 예정 (시나리오 파일 TODO).
+COMMENT: >>>
+성공 여부는 VLA 가 돌려주는 ``status`` 로만 판단한다. ``progress`` 는 추정값이라 판정에 쓰지 않는다.
+파지 판정을 joint_state(기하) 와 묶어 강화하는 것은 별건으로 남아 있다.
+<<<
 RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-31
@@ -147,9 +158,10 @@ UID: TC-105
 TITLE: 조리대 이동 및 tray 안착 (place_on_tray)
 METHOD: Demonstration
 STATEMENT: >>>
-1. sub-task ``place_on_tray`` 가 이동(``goal:counter``)과 VLA 명령 "Place the cucumber on the tray." 를 발사한다.
-2. G1이 오이를 든 채 조리대로 보행한 뒤 tray 위 지정 위치에 놓는다.
-3. VLM이 "the cucumber is resting on the tray" 를 판정하고, G1이 "오이 가져왔습니다" 라고 안내한다.
+1. ``close(fridge_door)`` → ``move_to(user)`` → ``handover(cucumber, user)`` 가 차례로 발사된다.
+   ``move_to`` 는 nav, 나머지는 VLA 로 나간다 (``config/actions.yaml`` 의 ``exec``).
+2. G1이 오이를 든 채 사용자에게 보행한 뒤 건넨다.
+3. 마지막 ``DONE`` 과 ``END`` 를 함께 받으면 계획이 완료되고, ``holding`` 이 ``none`` 으로 돌아간다.
 <<<
 EXPECTED: >>>
 이동 중 파지 상태가 유지되고, 오이가 tray 지정 위치에 놓인다. 완료 안내 음성이 출력되며 시나리오가 정상 종료된다.

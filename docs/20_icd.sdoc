@@ -250,6 +250,34 @@ RELATIONS:
 - TYPE: File
   VALUE: _src/cortex/src/cortex_action/cortex_action/tts_node.py
 
+[ICD]
+UID: ICD-83
+TITLE: TTS Prefetch (orchestrator → tts)
+COMM_TYPE: DDS Topic
+SOURCE: orchestrator_node
+TARGET: tts_node
+TOPIC: /cortex/tts/prefetch · /cortex/tts/warmup
+MSG_TYPE: cortex_msgs/ActionCmd
+QOS: Reliable
+FREQUENCY: 이벤트 (다음 단계 확정 시 · 기동 후 1회)
+STATEMENT: >>>
+말할 문장을 **미리** 보내 합성 결과만 캐시에 채워 둔다 (재생하지 않는다). ``prefetch`` 는
+다음 subtask 의 ``say`` 를, ``warmup`` 은 기동 직후 고정 문구와 예시 문장을 대상으로 한다.
+<<<
+PRECONDITION: tts_node 기동
+COMMENT: >>>
+캐시에 있으면 4~24 ms 에 재생이 시작되고, 없으면 CLOVA 합성에 0.3~1.4초가 걸린다.
+계획이 스트리밍으로 오므로 다음 문장을 미리 알 수 있어 성립하는 최적화다 (SYS-REQ-29).
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-29
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_action/cortex_action/tts_node.py
+
 [[/SECTION]]
 
 [[SECTION]]
@@ -257,106 +285,39 @@ TITLE: 시나리오 실행 및 판정
 
 [TEXT]
 STATEMENT: >>>
-orchestrator가 sub-task를 VLM 판정과 동작 모듈에 분배하는 경로이다.
+발화에서 subtask 를 만들고(LLM), 조작 직전에 대상을 확인하고(detector),
+실행 모듈(nav / VLA)에 나눠 보내는 경로이다. 성공 여부는 모듈이 돌려주는 상태로만 판정한다.
 ``SYS-REQ-44`` (시나리오 실행) 를 중심으로 ``SYS-REQ-31`` / ``SYS-REQ-45`` 의 명령 진입점을 포함한다.
 <<<
 
 [ICD]
-UID: ICD-65
-TITLE: Active Subtask (orchestrator → vlm)
-COMM_TYPE: DDS Topic
-SOURCE: orchestrator_node
-TARGET: vlm_node
-TOPIC: /cortex/active_subtask
-MSG_TYPE: cortex_msgs/Subtask
-QOS: Reliable
-FREQUENCY: subtask 진입 시
-STATEMENT: >>>
-``id: str`` (subtask name), ``success_check: str`` (VLM 판정 기준 텍스트),
-``timeout_sec: float``.
-
-orchestrator → vlm_node 로 "지금 이것을 판정하라" 는 지시를 전달한다.
-<<<
-PRECONDITION: orchestrator subtask on_create 진입
-RELATIONS:
-- TYPE: Parent
-  VALUE: SYS-REQ-44
-  ROLE: Implements
-- TYPE: File
-  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
-- TYPE: File
-  VALUE: _src/cortex/src/cortex_perception/cortex_perception/vlm_node.py
-- TYPE: File
-  VALUE: _src/cortex/src/cortex_msgs/msg/Subtask.msg
-
-[ICD]
-UID: ICD-66
-TITLE: VLM Verdict (vlm → orchestrator)
-COMM_TYPE: DDS Topic
-SOURCE: vlm_node
-TARGET: orchestrator_node
-TOPIC: /cortex/critic/verdict
-MSG_TYPE: cortex_msgs/Verdict
-QOS: Reliable
-FREQUENCY: period_sec (기본 1 Hz)
-STATEMENT: >>>
-``subtask_id: str``, ``passed: bool``.
-
-orchestrator는 tick 루프에서 ``latest_verdict`` 를 폴링한다
-(무거운 추론이 tick을 막지 않도록 캐시).
-<<<
-PRECONDITION: vlm_node 클라우드 VLM 추론 완료
-COMMENT: OM IF-21 대체. 의미 변경 — scene description → pass/fail 판정.
-RELATIONS:
-- TYPE: Parent
-  VALUE: SYS-REQ-44
-  ROLE: Implements
-- TYPE: File
-  VALUE: _src/cortex/src/cortex_perception/cortex_perception/vlm_node.py
-- TYPE: File
-  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
-- TYPE: File
-  VALUE: _src/cortex/src/cortex_msgs/msg/Verdict.msg
-
-[ICD]
-UID: ICD-71
-TITLE: VLM API (vlm_node → Cloud)
-COMM_TYPE: HTTPS
-SOURCE: vlm_node
-TARGET: VLM API
-MSG_TYPE: REST API (TBD)
-QOS: N/A
-FREQUENCY: On-demand
-STATEMENT: >>>
-``image`` + ``prompt`` → ``verdict(pass/fail)``. 모델 및 엔드포인트 TBD.
-<<<
-PRECONDITION: API key + 네트워크
-RELATIONS:
-- TYPE: Parent
-  VALUE: SYS-REQ-44
-  ROLE: Implements
-- TYPE: File
-  VALUE: _src/cortex/src/cortex_perception/cortex_perception/vlm_node.py
-
-[ICD]
 UID: ICD-70
-TITLE: Sub-task Cmd — nav / manip (orchestrator → gearsonic)
+TITLE: Subtask Cmd (orchestrator → nav-planner)
 COMM_TYPE: DDS Topic
 SOURCE: orchestrator_node
-TARGET: gearsonic
-TOPIC: (미정) ActionCmd
-MSG_TYPE: cortex_msgs/ActionCmd
+TARGET: nav-planner
+TOPIC: rt/cortex/nav/cmd
+MSG_TYPE: cortex_msgs::msg::dds_::SubtaskCmd_
 QOS: Reliable
-FREQUENCY: On-demand
+FREQUENCY: 이벤트 (subtask 1건마다 1회)
 STATEMENT: >>>
-named goal(nav) / manip 지시 텍스트. orchestrator의 ``navigation`` / ``vla`` connector가 발행한다.
+``plan_id`` (``p-<오케스트레이터 시작 epoch>-<4자리 일련>``) + ``index`` (계획 내 순번, 0부터)
++ ``action`` + ``args`` (서명 순서) + ``instruction`` (VLA 전용, nav 는 빈 문자열)
++ ``cancel`` (true 면 해당 ``plan_id``/``index`` 를 취소하고 나머지 필드는 무시).
+
+nav 는 ``action`` 이 ``move_to`` 인 것만 처리하고, ``args[0]`` 을 ``config/destinations.yaml``
+의 목적지 이름으로 해석한다. 그 밖의 action 은 ``unsupported`` 로 FAILED 를 돌려준다.
 <<<
-PRECONDITION: gearsonic goal 어댑터 신설 필요
+PRECONDITION: nav-planner 가 목적지 카탈로그를 적재한 상태
 COMMENT: >>>
-⚠ **수신측 미구현(gap).** gearsonic에 ActionCmd 수신부가 없다. nav 경로는 gearsonic 쪽에
-``rt/kist/nav/cmd_vel`` 수신부(ICD-72)가 생겼으므로, 남은 것은 orchestrator → navigation-planner 목표 전달과
-navigation-planner 의 cmd_vel 발행이다. manip은 vla-inference operator 채널(``prompt:<text>``)로 변환하는
-어댑터가 필요하다.
+양측 구현 완료 (cortex ``743ce11`` / navigation-planner ``0a31cf9``, 2026-09-26).
+이전의 ``(미정) ActionCmd`` 를 이 계약으로 대체하였다.
+
+**DDS 이름 정합이 이 인터페이스의 핵심 위험이다.** 오케스트레이터가 ROS 2 노드이므로
+와이어에 올라가는 이름은 변형된 형태(``rt/`` 접두사, ``::msg::dds_::`` + 뒤 밑줄)이고,
+DDS 는 토픽 이름과 타입 이름이 **함께** 맞아야 엔드포인트를 연결한다. 하나라도 어긋나면
+오류 없이 **양측이 서로를 보지 못한다**. 세 레포가 각자 계약을 적어 두어 실제로 어긋나 있었고
+2026-09-26 에 맞췄다. 실기 빌드로 확인하는 것이 남았다.
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -371,7 +332,342 @@ RELATIONS:
 - TYPE: File
   VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
 - TYPE: File
-  VALUE: _src/cortex/src/cortex_msgs/msg/ActionCmd.msg
+  VALUE: _src/cortex/src/cortex_msgs/msg/SubtaskCmd.msg
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/executor.py
+- TYPE: File
+  VALUE: _src/navigation-planner/idl/kist_nav.idl
+- TYPE: File
+  VALUE: _src/navigation-planner/src/goal_generation/goal_command_receiver.cpp
+
+[ICD]
+UID: ICD-74
+TITLE: Subtask State (nav-planner → orchestrator)
+COMM_TYPE: DDS Topic
+SOURCE: nav-planner
+TARGET: orchestrator_node
+TOPIC: rt/cortex/nav/state
+MSG_TYPE: cortex_msgs::msg::dds_::SubtaskState_
+QOS: Reliable
+FREQUENCY: 10 Hz 상시 (IDLE 포함)
+STATEMENT: >>>
+``stamp_ns`` (발행 시각, epoch ns — 신선도 판정) + ``plan_id`` / ``index`` / ``action`` 되돌림
++ ``status`` (0 IDLE · 1 RUNNING · 2 DONE · 3 FAILED) + ``progress`` (0~1, 디버그용)
++ ``detail`` (사람이 읽는 사유. ``cancelled`` · ``unsupported: …`` · ``no path`` 등).
+
+``DONE`` 과 ``FAILED`` 는 3회(300 ms) 반복 발행한 뒤 ``IDLE`` 로 돌아간다. ``IDLE`` 이
+"정리 완료, 새 명령 받을 수 있음" 신호다. 오케스트레이터는 1초 이상 끊기면 모듈 상실로 본다.
+<<<
+PRECONDITION: nav-planner 기동
+COMMENT: >>>
+양측 구현 완료 (2026-09-26). ``progress`` 는 nav 에서 ``1 - 남은거리/초기거리`` 로 채운다.
+
+이전에는 ``Header`` 를 쓰고 사유 필드를 ``note`` 로 불렀다. cortex · vla 와 맞추어
+``stamp_ns`` · ``detail`` 로 통일했다 (navigation-planner ``0a31cf9``).
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-45
+  ROLE: Implements
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/navigation-planner/src/controller/subtask_state_publisher.cpp
+- TYPE: File
+  VALUE: _src/navigation-planner/src/controller/controller_worker.cpp
+- TYPE: File
+  VALUE: _src/navigation-planner/idl/kist_nav.idl
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_msgs/msg/SubtaskState.msg
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
+
+[ICD]
+UID: ICD-75
+TITLE: Subtask Cmd (orchestrator → vla-inference)
+COMM_TYPE: DDS Topic
+SOURCE: orchestrator_node
+TARGET: vla-inference
+TOPIC: rt/cortex/vla/cmd
+MSG_TYPE: cortex_msgs::msg::dds_::SubtaskCmd_
+QOS: Reliable
+FREQUENCY: 이벤트 (subtask 1건마다 1회)
+STATEMENT: >>>
+ICD-70 과 같은 타입이다. VLA 는 ``move_to`` 를 제외한 19개 action 을 처리하며,
+``instruction`` 에 영어 지시문이 함께 온다 (예 ``Hand the cucumber to the person.``).
+지시문은 오케스트레이터가 ``config/actions.yaml`` 의 템플릿으로 만든다.
+<<<
+PRECONDITION: vla-inference 정책 적재 완료
+COMMENT: >>>
+양측 구현 완료 (2026-09-26). 취소 의미가 nav 와 다르다 — VLA 는 즉시 멈추지 않고
+현재 동작을 **안전 지점까지 끝낸 뒤** 중단한다 (``cancel_deferred``).
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-31
+  ROLE: Implements
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/executor.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_msgs/msg/SubtaskCmd.msg
+- TYPE: File
+  VALUE: _src/vla-inference/idl/cortex_subtask.idl
+- TYPE: File
+  VALUE: _src/vla-inference/src/vla/cortex/bridge.py
+- TYPE: File
+  VALUE: _src/vla-inference/src/vla/cortex/subtask_machine.py
+
+[ICD]
+UID: ICD-76
+TITLE: Subtask State (vla-inference → orchestrator)
+COMM_TYPE: DDS Topic
+SOURCE: vla-inference
+TARGET: orchestrator_node
+TOPIC: rt/cortex/vla/state
+MSG_TYPE: cortex_msgs::msg::dds_::SubtaskState_
+QOS: Reliable
+FREQUENCY: 10 Hz 상시 (IDLE 포함)
+STATEMENT: >>>
+``stamp_ns`` (발행 시각, epoch ns — 신선도 판정) + ``plan_id`` / ``index`` / ``action`` 되돌림
++ ``status`` (0 IDLE · 1 RUNNING · 2 DONE · 3 FAILED) + ``progress`` (0~1, 디버그용)
++ ``detail`` (사람이 읽는 사유. ``cancelled`` · ``unsupported: …`` · ``no path`` 등).
+
+``DONE`` 과 ``FAILED`` 는 3회(300 ms) 반복 발행한 뒤 ``IDLE`` 로 돌아간다. ``IDLE`` 이
+"정리 완료, 새 명령 받을 수 있음" 신호다. 오케스트레이터는 1초 이상 끊기면 모듈 상실로 본다.
+<<<
+PRECONDITION: vla-inference 기동
+COMMENT: >>>
+양측 구현 완료 (2026-09-26). VLA 의 ``progress`` 는 추정값이라 판정에 쓰지 않는다 —
+성공 여부는 ``status`` 만으로 판단한다.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-31
+  ROLE: Implements
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/vla-inference/src/vla/cortex/bridge.py
+- TYPE: File
+  VALUE: _src/vla-inference/src/common/cyclonedds/cortex_msgs.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_msgs/msg/SubtaskState.msg
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
+
+[ICD]
+UID: ICD-77
+TITLE: Plan Request (orchestrator → llm)
+COMM_TYPE: DDS Topic
+SOURCE: orchestrator_node
+TARGET: llm_node
+TOPIC: /cortex/llm/request
+MSG_TYPE: cortex_msgs/PlanRequest
+QOS: Reliable
+FREQUENCY: 이벤트 (발화 1건마다 1회)
+STATEMENT: >>>
+``plan_id`` + ``utterance`` (STT 원문) + ``state`` (``idle`` · ``running:<동사>`` ·
+``awaiting_confirm:<요약>``) + ``at`` + ``holding``.
+
+``at`` 은 마지막으로 도착에 성공한 장소(초기값 ``home``), ``holding`` 은 지금 들고 있는
+물건(초기값 ``none``) 이다. 이 둘이 없으면 "테이블에 놔" 같은 연속 발화를 해석할 수 없다.
+<<<
+PRECONDITION: llm_node 기동 및 API 키 설정
+COMMENT: >>>
+오케스트레이터는 ``at`` · ``holding`` 을 명령 발행 시점이 아니라 **모듈이 돌려준 결과**\ 로
+갱신한다. 이동 성공이면 ``at`` 을 바꾸고 실패면 ``unknown`` 으로 되돌리며, 놓기에 실패하면
+물건이 아직 손에 있으므로 ``holding`` 을 유지한다.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/llm_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_msgs/msg/PlanRequest.msg
+
+[ICD]
+UID: ICD-78
+TITLE: Plan Step (llm → orchestrator)
+COMM_TYPE: DDS Topic
+SOURCE: llm_node
+TARGET: orchestrator_node
+TOPIC: /cortex/llm/step
+MSG_TYPE: cortex_msgs/PlanStep
+QOS: Reliable
+FREQUENCY: 스트리밍 (LLM 출력 1줄마다 1건)
+STATEMENT: >>>
+``kind`` (0 SUB · 1 END · 2 REPLY · 3 ERROR) + ``index`` + ``action`` + ``args``
++ ``say`` (시작할 때 로봇이 말할 한 문장) + ``reply_kind`` (``chat`` · ``none`` · ``confirm``)
++ ``detail``.
+
+LLM 이 NDJSON 한 줄을 완성할 때마다 1건 발행한다. 오케스트레이터는 ``END`` 를 기다리지 않고
+``index`` 0 이 도착하는 즉시 실행을 시작한다.
+<<<
+PRECONDITION: PlanRequest 수신
+COMMENT: >>>
+줄은 두 검증기를 통과한 것만 나간다. 검증기 1 은 형식(JSON · 아는 동사 · 인자 개수 ·
+소문자 snake_case · 서명의 인자 이름을 값으로 쓰지 않았는지), 검증기 2 는 실행 가능성
+(별칭 정규화 후 갈 수 있는 곳인지 · 다룰 수 있는 물건인지) 을 본다.
+
+검증기 2 가 막으면 ``kind`` ``ERROR`` 로 사유 키를 실어 보내고, 오케스트레이터가 그것을
+한국어 안내로 바꿔 말한다. 장소가 아닌 대상에 붙은 ``move_to`` 는 그 줄만 버리고 계획을
+잇는다 (이때 ``index`` 를 다시 매긴다).
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/llm_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/planner.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_msgs/msg/PlanStep.msg
+
+[ICD]
+UID: ICD-79
+TITLE: Target Check (orchestrator → detector)
+COMM_TYPE: Call
+SOURCE: orchestrator_node
+TARGET: detector_node
+TOPIC: /cortex/detector/check
+MSG_TYPE: cortex_msgs/CheckTarget
+QOS: Reliable
+FREQUENCY: 이벤트 (조작 subtask 직전 1회)
+STATEMENT: >>>
+요청 ``target`` (+ ``min_confidence`` · ``max_age_s``, 0 이면 검출기 기본값) /
+응답 ``found`` · ``confidence`` · ``label`` · bbox (``cx`` ``cy`` ``w`` ``h``, 0~1 정규화)
+· ``stamp`` · ``detail`` (``""`` · ``stale`` · ``no_frame`` · ``unknown_target`` ·
+``model_not_loaded``).
+
+새로 추론하지 않고 최근 0.6초 창에서 답하므로 수 ms 안에 돌아온다. 한 프레임의 깜빡임으로
+판정이 뒤집히지 않는다.
+<<<
+PRECONDITION: detector_node 기동
+COMMENT: >>>
+현재 ``backend: always`` 스텁이라 모든 target 을 보인다고 답한다. YOLO 전환은 파라미터
+한 줄(``backend: yolo``)이며, 오이는 COCO 에 없어 시연 환경 데이터로 파인튜닝이 필요하다.
+
+**"안 보임" 일 때만 계획을 중단한다.** 검출기가 없거나 프레임이 없어 판정 자체가 불가능한
+경우는 fail-open 으로 진행한다 — 판정기가 죽어서 로봇이 멈추는 쪽이 더 나쁘다.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_perception/cortex_perception/detector_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_msgs/srv/CheckTarget.srv
+
+[ICD]
+UID: ICD-81
+TITLE: LLM API (llm_node → Gemini)
+COMM_TYPE: HTTPS
+SOURCE: llm_node
+TARGET: Gemini API
+MSG_TYPE: google-genai streaming
+QOS: N/A
+FREQUENCY: 이벤트 (발화 1건마다 1회)
+STATEMENT: >>>
+시스템 프롬프트(``config/actions.yaml`` 에서 생성) + 사용자 메시지(``mode`` · ``at`` ·
+``holding`` · ``utterance``) 를 보내고 NDJSON 스트림을 받는다. 모델 ``gemini-3.6-flash``.
+<<<
+PRECONDITION: GOOGLE_API_KEY 환경변수
+COMMENT: >>>
+첫 줄 도착 5초 · 전체 15초 타임아웃이고, 실패하면 1회 재시도한다. **재시도는 아직 아무
+줄도 내보내지 않은 경우에만 안전하다** — 이미 내보낸 뒤면 계획이 섞인다.
+
+측정에서 응답이 오지 않는 요청 하나에 73분 매달린 적이 있어 넣은 장치다. 실측 첫 줄
+p50 1.57초 · p95 1.93초 (108발화 × 5회).
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/llm_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/planner.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/config/actions.yaml
+
+[ICD]
+UID: ICD-82
+TITLE: Nav Destinations (nav-planner → peers)
+COMM_TYPE: DDS Topic
+SOURCE: nav-planner
+TARGET: orchestrator_node
+TOPIC: rt/kist/nav/destinations
+MSG_TYPE: kist_msgs::NavDestinationList
+QOS: Reliable
+FREQUENCY: 저주기 재발행 (늦게 붙은 구독자용)
+STATEMENT: >>>
+``seq`` + ``stamp_ns`` + ``destinations`` (각 항목은 ``name`` · ``x`` · ``y`` · ``yaw_deg``).
+``config/destinations.yaml`` 을 그대로 실어 보낸다 — 갈 수 있는 곳의 목록이다.
+<<<
+PRECONDITION: nav-planner 기동
+COMMENT: >>>
+⚠ **오케스트레이터는 이 토픽을 구독하지 않기로 결정했다** (2026-09-26). 계약을
+``cmd`` / ``state`` 두 토픽으로 유지하기 위해서다. 모듈마다 전용 타입이 늘면 계약이
+비대칭해지고, 같은 판단이 두 곳에 생겨 언젠가 어긋난다.
+
+대신 cortex 는 ``config/capabilities.yaml`` 의 ``nav.places`` 를 **손으로 유지하는 설정**\ 으로
+둔다. 그것은 빠른 사전 차단일 뿐 최종 권한이 아니며, 목록이 낡아 통과한 줄은 nav 이
+``FAILED`` 로 돌려준다. **station 이 바뀌면 두 파일을 같이 고쳐야 한다.**
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-45
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/navigation-planner/src/goal_generation/destination_publisher.cpp
+- TYPE: File
+  VALUE: _src/navigation-planner/config/destinations.yaml
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/config/capabilities.yaml
+
+[ICD]
+UID: ICD-84
+TITLE: Detections (detector → peers)
+COMM_TYPE: DDS Topic
+SOURCE: detector_node
+TARGET: Cortex
+TOPIC: /cortex/detections
+MSG_TYPE: cortex_msgs/DetectionArray
+QOS: BestEffort
+FREQUENCY: 8 Hz
+STATEMENT: >>>
+``Detection`` 배열 (``label`` · ``confidence`` · bbox). 최근 추론 결과를 그대로 공개한다.
+<<<
+PRECONDITION: detector_node 기동
+COMMENT: >>>
+⚠ **수신측 미구현.** 판정은 ICD-79 의 서비스로 하므로 이 토픽을 쓰는 곳이 아직 없다.
+디버그·시각화용으로 남겨 두었다.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-44
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_perception/cortex_perception/detector_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_msgs/msg/DetectionArray.msg
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_msgs/msg/Detection.msg
 
 [ICD]
 UID: ICD-72
@@ -420,7 +716,7 @@ UID: ICD-62
 TITLE: Camera Color (ext-sensor → PC)
 COMM_TYPE: DDS Topic
 SOURCE: ext-sensor-io
-TARGET: vlm_node
+TARGET: detector_node
 TOPIC: rt/kist/camera/<name>/color/h264
 MSG_TYPE: kist_msgs (H.264 color frame)
 QOS: BestEffort
@@ -429,10 +725,13 @@ STATEMENT: >>>
 H.264 NAL + ``seq`` / ``stamp`` / ``width`` / ``height`` / ``keyframe``.
 카메라 이름(``head`` / 양 손목)별 토픽.
 
-소비처: vlm_node(판정) · gui_bridge_node(표시) · vla-inference(정책 관측) · navigation-planner(세그멘테이션).
+소비처: detector_node(대상 확인) · gui_bridge_node(표시) · vla-inference(정책 관측).
 <<<
 PRECONDITION: ext-sensor tx(카메라) 활성
-COMMENT: TARGET 은 대표 소비처(vlm_node)만 표기. 실제 소비처 4곳은 File 관계 참조.
+COMMENT: >>>
+TARGET 은 대표 소비처(detector_node)만 표기. 실제 소비처는 File 관계 참조.
+navigation-planner 의 세그멘테이션 소비부는 LIO 재구성 때 _parked/ 로 보류되었다.
+<<<
 RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-42
@@ -448,13 +747,11 @@ RELATIONS:
 - TYPE: File
   VALUE: _src/ext-sensor-io/src/realsense/transmitter/h264_encoder.cpp
 - TYPE: File
-  VALUE: _src/cortex/src/cortex_perception/cortex_perception/vlm_node.py
+  VALUE: _src/cortex/src/cortex_perception/cortex_perception/detector_node.py
 - TYPE: File
   VALUE: _src/cortex/src/cortex_gui/cortex_gui/gui_bridge_node.py
 - TYPE: File
   VALUE: _src/vla-inference/src/vla/io/realsense/color_subscriber.py
-- TYPE: File
-  VALUE: _src/navigation-planner/src/cv/yolo/yolo_inference.cpp
 
 [ICD]
 UID: ICD-67
@@ -483,6 +780,37 @@ RELATIONS:
   VALUE: _src/cortex/src/cortex_gui/cortex_gui/gui_bridge_node.py
 - TYPE: File
   VALUE: _src/cortex/src/cortex_msgs/msg/TaskStatus.msg
+
+[ICD]
+UID: ICD-80
+TITLE: Trace Event (orchestrator → gui_bridge)
+COMM_TYPE: DDS Topic
+SOURCE: orchestrator_node
+TARGET: gui_bridge_node
+TOPIC: /cortex/trace
+MSG_TYPE: cortex_msgs/TraceEvent
+QOS: Reliable
+FREQUENCY: 이벤트 (생각의 흐름 1건마다)
+STATEMENT: >>>
+``kind`` 12종 (HEARD · THINKING · PLAN_LINE · PLAN_END · REPLY · STEP_START · STEP_DONE ·
+STEP_FAILED · GROUND · CANCEL · PLAN_DONE · NOTE) + ``index`` + ``title`` (화면에 그대로
+쓰는 한국어) + 본문.
+<<<
+PRECONDITION: gui_bridge_node 기동
+COMMENT: >>>
+gui_bridge 가 최근 이벤트를 고리 버퍼에 들고 있어, 늦게 접속한 화면에도 **지금 계획의
+이벤트를 되돌려 보여준다**. 시연 중 브라우저를 새로 열어도 진행 상황이 비지 않는다.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-41
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_gui/cortex_gui/gui_bridge_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_msgs/msg/TraceEvent.msg
 
 [ICD]
 UID: ICD-55
@@ -561,9 +889,9 @@ RELATIONS:
 - TYPE: File
   VALUE: _src/ext-sensor-io/src/system/uwb_transmitter.cpp
 - TYPE: File
-  VALUE: _src/navigation-planner/src/kalman_filter/pose_filter.cpp
+  VALUE: _src/navigation-planner/src/localization/uwb_receiver.cpp
 - TYPE: File
-  VALUE: _src/navigation-planner/src/kalman_filter/uwb_odom_aekf.cpp
+  VALUE: _src/navigation-planner/src/localization/localization_filter.cpp
 
 [ICD]
 UID: ICD-58
@@ -589,13 +917,13 @@ RELATIONS:
   VALUE: SYS-REQ-32
   ROLE: Implements
 - TYPE: File
-  VALUE: _src/navigation-planner/src/unitree/unitree_pointcloud_reader.cpp
+  VALUE: _src/navigation-planner/src/lio/lio_receiver.cpp
 - TYPE: File
   VALUE: _src/navigation-planner/src/unitree/unitree_odometry_reader.cpp
 - TYPE: File
-  VALUE: _src/navigation-planner/src/pointcloud/pointcloud_processor.cpp
+  VALUE: _src/navigation-planner/src/route_planner/perception/obstacle_mapper.cpp
 - TYPE: File
-  VALUE: _src/navigation-planner/src/occupancy_grid/occupancy_grid_builder.cpp
+  VALUE: _src/navigation-planner/src/route_planner/perception/obstacle_grid_builder/obstacle_voxel_grid.cpp
 
 [ICD]
 UID: ICD-63
@@ -624,10 +952,6 @@ RELATIONS:
   VALUE: _src/ext-sensor-io/src/realsense/transmitter/depth_publisher.cpp
 - TYPE: File
   VALUE: _src/ext-sensor-io/src/realsense/transmitter/rvl_encoder.cpp
-- TYPE: File
-  VALUE: _src/navigation-planner/src/labeled_cloud/labeled_cloud_generator.cpp
-- TYPE: File
-  VALUE: _src/navigation-planner/src/labeled_cloud/camera_extrinsics.cpp
 
 [[/SECTION]]
 
