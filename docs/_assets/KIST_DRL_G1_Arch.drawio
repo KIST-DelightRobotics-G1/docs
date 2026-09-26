@@ -166,25 +166,6 @@
         <mxCell id="gs_nav" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=15;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;navigation-planner&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[C++/DDS] · LiDAR+seg → semantic grid → cmd_vel&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="260" x="3600" y="1195" as="geometry" />
         </mxCell>
-        <mxCell id="lio" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#8A96AA;fontColor=#ffffff;strokeColor=#2D3A52;align=center;arcSize=10;dashed=1;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;FAST-LIO engine&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[External · deepglint] · LiDAR odometry + registered cloud&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="3560" y="1650" as="geometry" />
-        </mxCell>
-        <mxCell id="e_livox" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="lio" value="&lt;b&gt;Raw Livox · /livox/lidar&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="3400" y="1440" />
-              <mxPoint x="3400" y="1690" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e_lio_nav" edge="1" parent="1" source="lio" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" target="gs_nav" value="&lt;b&gt;rt/Odometry_loc · rt/cloud_registered_1&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="3900" y="1690" />
-              <mxPoint x="3900" y="1255" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
         <mxCell id="gs_ih" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Input Handler&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[C++] · goal → setpoint&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="260" x="3900" y="1195" as="geometry" />
         </mxCell>
@@ -441,7 +422,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="eext_lidar" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="gs_nav" value="&lt;b&gt;rt/dog_odom&lt;/b&gt;">
+        <mxCell id="eext_lidar" edge="1" parent="1" source="loco" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="gs_nav" value="&lt;b&gt;LiDAR → FAST-LIO → rt/cloud_registered_1 · rt/Odometry_loc&lt;/b&gt;&lt;div&gt;rt/dog_odom&lt;/div&gt;">
           <mxGeometry relative="1" x="-0.3" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
