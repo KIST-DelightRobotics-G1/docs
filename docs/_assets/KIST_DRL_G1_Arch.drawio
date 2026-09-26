@@ -80,23 +80,6 @@
         <mxCell id="iQNLego6aBUNmFpNtnTF-26" parent="iQNLego6aBUNmFpNtnTF-25" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=0;strokeColor=none;fillColor=none;fontColor=#FFFFFF;fontSize=26;" value="&lt;font style=&quot;font-weight: bold;&quot;&gt;Display System&lt;/font&gt;&lt;br&gt;&lt;font&gt;[External System — Demo Visualization]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font&gt;Live camera feed streaming and&lt;br&gt;real-time task status dashboard.&lt;/font&gt;" vertex="1">
           <mxGeometry height="110" width="230" x="63.272383354350566" y="48.99999999999999" as="geometry" />
         </mxCell>
-        <mxCell id="STjY5v7M9Wxuw4_xLx33-0" connectable="0" parent="iQNLego6aBUNmFpNtnTF-1" style="group;fontSize=26;" value="" vertex="1">
-          <mxGeometry height="224" width="562.421185372005" x="-319.56809583858757" y="218" as="geometry" />
-        </mxCell>
-        <mxCell id="STjY5v7M9Wxuw4_xLx33-1" parent="STjY5v7M9Wxuw4_xLx33-0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#8B8B8B;fontColor=#FFFFFF;arcSize=8;shadow=1;fontSize=26;" value="" vertex="1">
-          <mxGeometry height="224" width="562.421185372005" as="geometry" />
-        </mxCell>
-        <mxCell id="STjY5v7M9Wxuw4_xLx33-2" parent="STjY5v7M9Wxuw4_xLx33-0" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=0;strokeColor=none;fillColor=none;fontColor=#FFFFFF;fontSize=26;" value="&lt;b&gt;VLM API&lt;/b&gt;&lt;br&gt;[External System — Gemini]&lt;br&gt;&lt;br&gt;Judges sub-task success from&lt;div&gt;camera image + criterion prompt&lt;/div&gt;" vertex="1">
-          <mxGeometry height="110" width="230" x="166.21035668823896" y="56.99688888888883" as="geometry" />
-        </mxCell>
-        <mxCell id="STjY5v7M9Wxuw4_xLx33-3" edge="1" parent="iQNLego6aBUNmFpNtnTF-1" source="STjY5v7M9Wxuw4_xLx33-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="iQNLego6aBUNmFpNtnTF-4">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="STjY5v7M9Wxuw4_xLx33-4" connectable="0" parent="STjY5v7M9Wxuw4_xLx33-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;b style=&quot;color: rgb(112, 112, 112); font-size: 26px;&quot;&gt;Image + criterion prompt &lt;/b&gt;&lt;b style=&quot;color: rgb(112, 112, 112); font-size: 26px;&quot;&gt;↔&lt;/b&gt;&lt;b style=&quot;color: rgb(112, 112, 112); font-size: 26px;&quot;&gt; Verdict (pass/fail)&lt;/b&gt;&lt;br style=&quot;color: rgb(112, 112, 112); font-size: 26px;&quot;&gt;&lt;span style=&quot;color: rgb(112, 112, 112); font-size: 26px;&quot;&gt;[HTTPS]&lt;/span&gt;" vertex="1">
-          <mxGeometry relative="1" x="0.0398" y="-3" as="geometry">
-            <mxPoint x="3" as="offset" />
-          </mxGeometry>
-        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
@@ -122,9 +105,6 @@
         </mxCell>
         <mxCell id="gstt" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#8A96AA;fontColor=#ffffff;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Google Cloud STT&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Cloud SaaS] · speech recognition&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="260" x="3880" y="470" as="geometry" />
-        </mxCell>
-        <mxCell id="NucP1_uQ7_ntNPB_EWSK-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#8A96AA;fontColor=#ffffff;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;VLM API&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Cloud SaaS] · vision-language judge&lt;/div&gt;" vertex="1">
-          <mxGeometry height="80" width="260" x="4230" y="470" as="geometry" />
         </mxCell>
         <mxCell id="display" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#E8EAF0;fontColor=#2D3A52;strokeColor=#2D3A52;strokeWidth=2;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;cortex-gui&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[Browser/JS] · display renderer&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="260" x="4560" y="470" as="geometry" />
@@ -162,13 +142,13 @@
         <mxCell id="stt" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;stt_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · speech → transcript&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="260" x="3601" y="705" as="geometry" />
         </mxCell>
-        <mxCell id="vlm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;vlm_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · grounding · precondition · verdict&lt;/div&gt;" vertex="1">
+        <mxCell id="detector" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;detector_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · YOLO rolling window · CheckTarget srv&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="260" x="4220" y="705" as="geometry" />
         </mxCell>
-        <mxCell id="orch" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;orchestrator_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · plan &amp;amp; sub-task engine (static | llm)&lt;/div&gt;" vertex="1">
+        <mxCell id="orch" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;orchestrator_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · subtask engine · robot state (at · holding)&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="260" x="3880" y="835" as="geometry" />
         </mxCell>
-        <mxCell id="llm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;llm_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · utterance → scenario plan (LLM)&lt;/div&gt;" vertex="1">
+        <mxCell id="llm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;llm_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · utterance → subtask NDJSON · 2-stage validator&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="260" x="4220" y="835" as="geometry" />
         </mxCell>
         <mxCell id="tts" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=16;fillColor=#ffffff;fontColor=#2D3A52;strokeColor=#2D3A52;align=center;arcSize=10;" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;tts_node&lt;/font&gt;&lt;/b&gt;&lt;div style=&quot;font-size:13px&quot;&gt;[rclpy] · text → speech (CLOVA)&lt;/div&gt;" vertex="1">
@@ -269,14 +249,6 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="NucP1_uQ7_ntNPB_EWSK-8" edge="1" parent="1" source="vlm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;startArrow=classic;endArrow=classic;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.46;entryY=1;entryDx=0;entryDy=0;" target="NucP1_uQ7_ntNPB_EWSK-3" value="&lt;b&gt;Image + Prompt ↔ Verdict&lt;/b&gt;">
-          <mxGeometry relative="1" x="0.0947" as="geometry">
-            <mxPoint as="offset" />
-            <Array as="points">
-              <mxPoint x="4349.94" y="550.06" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
         <mxCell id="e17" edge="1" parent="1" source="gui" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="display" value="&lt;b&gt;Camera + Task status&lt;/b&gt;&lt;div&gt;WebSocket: JPEG + JSON&lt;/div&gt;">
           <mxGeometry relative="1" x="0.35" as="geometry">
             <mxPoint as="offset" />
@@ -293,15 +265,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e8" edge="1" parent="1" source="vlm" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" target="orch" value="&lt;b&gt;Verdict · VlaPrompt&lt;/b&gt;">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="4349.94" y="810.06" />
-              <mxPoint x="4075" y="810.06" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="e7" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="vlm" value="&lt;b&gt;Subtask · VerdictRequest&lt;/b&gt;">
+        <mxCell id="e7" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;startArrow=classic;endArrow=classic;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="detector" value="&lt;b&gt;CheckTarget(target) ↔ found&lt;/b&gt;">
           <mxGeometry relative="1" x="0.2002" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -309,7 +273,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e_llm" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;startArrow=classic;endArrow=classic;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="llm" value="&lt;b&gt;PlanRequest ↔ Plan&lt;/b&gt;">
+        <mxCell id="e_llm" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;startArrow=classic;endArrow=classic;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="llm" value="&lt;b&gt;PlanRequest (at · holding) ↔ PlanStep stream&lt;/b&gt;">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="4075" y="950.06" />
@@ -334,7 +298,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="eext_goal" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;entryX=0.25;entryY=0;entryDx=0;entryDy=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" target="gs_nav" value="&lt;b&gt;ActionCmd (Nav)&lt;/b&gt;">
+        <mxCell id="eext_goal" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;entryX=0.25;entryY=0;entryDx=0;entryDy=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" target="gs_nav" value="&lt;b&gt;SubtaskCmd&lt;/b&gt;">
           <mxGeometry relative="1" x="0.3661" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -344,7 +308,7 @@
             <mxPoint x="3850" y="950" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uUhs-C_OsoEg8yj5RCvM-1" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.12;entryY=0;entryDx=0;entryDy=0;" target="vla_src" value="&lt;b&gt;ActionCmd (Mani, grounded)&lt;/b&gt;">
+        <mxCell id="uUhs-C_OsoEg8yj5RCvM-1" edge="1" parent="1" source="orch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.12;entryY=0;entryDx=0;entryDy=0;" target="vla_src" value="&lt;b&gt;SubtaskCmd (+instruction)&lt;/b&gt;">
           <mxGeometry relative="1" x="0.3" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -353,7 +317,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="e_cs_vla" edge="1" parent="1" source="vla_src" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.27;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="orch" value="&lt;b&gt;CommandStatus&lt;/b&gt;">
+        <mxCell id="e_cs_vla" edge="1" parent="1" source="vla_src" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.27;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="orch" value="&lt;b&gt;SubtaskState 10 Hz&lt;/b&gt;">
           <mxGeometry relative="1" x="-0.1441" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
@@ -361,6 +325,9 @@
               <mxPoint x="4009.94" y="1090.06" />
             </Array>
           </mxGeometry>
+        </mxCell>
+        <mxCell id="e_state_nav" edge="1" parent="1" source="gs_nav" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.6;exitY=0;exitDx=0;exitDy=0;entryX=0.35;entryY=1;entryDx=0;entryDy=0;" target="orch" value="&lt;b&gt;SubtaskState 10 Hz&lt;/b&gt;">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="gse4" edge="1" parent="1" source="gs_nav" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="gs_ih" value="&lt;b&gt;rt/kist/nav/cmd_vel (Twist)&lt;/b&gt;">
           <mxGeometry relative="1" as="geometry">
@@ -531,7 +498,7 @@
             <mxPoint x="-1" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="cIMrLoLIK3Qq1qA13unu-1" edge="1" parent="1" source="es_cam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" target="vlm" value="&lt;b&gt;Camera&lt;/b&gt;">
+        <mxCell id="cIMrLoLIK3Qq1qA13unu-1" edge="1" parent="1" source="es_cam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=14;strokeColor=#2D3A52;fontColor=#2D3A52;labelBackgroundColor=#FFFFFF;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" target="detector" value="&lt;b&gt;Camera&lt;/b&gt;">
           <mxGeometry relative="1" x="0.901" y="415" as="geometry">
             <mxPoint as="offset" />
             <Array as="points">
