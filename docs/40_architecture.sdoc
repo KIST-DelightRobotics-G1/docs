@@ -28,7 +28,7 @@ ICD를 수정한 뒤 위 명령을 다시 실행하면 다이어그램이 갱신
 CI에서 ``python tools/gen_arch.py --check`` 를 돌리면
 "ICD는 바뀌었는데 다이어그램은 안 바뀐" 상태를 빌드 실패로 잡을 수 있다.
 
-현재 인터페이스 32건.
+현재 인터페이스 33건.
 <<<
 
 [[SECTION]]
@@ -339,9 +339,11 @@ STATEMENT: >>>
         subgraph workstation["PC (RTX 4090) — Workstation"]
           n_nav_planner["nav-planner"]
         end
+        n_FAST_LIO_engine["FAST-LIO engine (구역 미지정)"]
 
         n_ext_sensor_io -->|"ICD-36"| n_nav_planner
-        n_G1 -->|"ICD-58"| n_nav_planner
+        n_G1 -->|"ICD-58"| n_FAST_LIO_engine
+        n_FAST_LIO_engine -->|"ICD-85"| n_nav_planner
         n_ext_sensor_io -->|"ICD-63"| n_nav_planner
    </pre>
    </div>
@@ -360,8 +362,12 @@ STATEMENT: >>>
      - ``rt/kist/uwb/pose``
    * - ICD-58
      - G1
+     - FAST-LIO engine
+     - ``/livox/lidar``
+   * - ICD-85
+     - FAST-LIO engine
      - nav-planner
-     - ``rt/utlidar/cloud_livox_mid360``
+     - ``rt/Odometry_loc · rt/cloud_registered_1``
    * - ICD-63
      - ext-sensor-io
      - nav-planner

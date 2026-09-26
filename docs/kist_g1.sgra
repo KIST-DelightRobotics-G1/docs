@@ -84,11 +84,11 @@ ELEMENTS:
     REQUIRED: True
   - TITLE: SOURCE
     HUMAN_TITLE: 송신 컨테이너
-    TYPE: SingleChoice(G1, gearsonic, ext-sensor-io, nav-planner, vla-inference, Cortex, stt_node, detector_node, llm_node, orchestrator_node, tts_node, gui_bridge_node, speaker_node, Google Cloud STT, Naver CLOVA TTS, Gemini API)
+    TYPE: SingleChoice(G1, gearsonic, ext-sensor-io, nav-planner, FAST-LIO engine, vla-inference, Cortex, stt_node, detector_node, llm_node, orchestrator_node, tts_node, gui_bridge_node, speaker_node, Google Cloud STT, Naver CLOVA TTS, Gemini API)
     REQUIRED: True
   - TITLE: TARGET
     HUMAN_TITLE: 수신 컨테이너
-    TYPE: SingleChoice(G1, gearsonic, ext-sensor-io, nav-planner, vla-inference, Cortex, stt_node, detector_node, llm_node, orchestrator_node, tts_node, gui_bridge_node, speaker_node, Google Cloud STT, Naver CLOVA TTS, Gemini API, Display Renderer)
+    TYPE: SingleChoice(G1, gearsonic, ext-sensor-io, nav-planner, FAST-LIO engine, vla-inference, Cortex, stt_node, detector_node, llm_node, orchestrator_node, tts_node, gui_bridge_node, speaker_node, Google Cloud STT, Naver CLOVA TTS, Gemini API, Display Renderer)
     REQUIRED: True
   - TITLE: TOPIC
     HUMAN_TITLE: 토픽 / 엔드포인트

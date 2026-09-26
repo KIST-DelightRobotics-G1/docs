@@ -326,9 +326,6 @@ RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-45
   ROLE: Implements
-- TYPE: Parent
-  VALUE: SYS-REQ-31
-  ROLE: Implements
 - TYPE: File
   VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
 - TYPE: File
@@ -895,35 +892,87 @@ RELATIONS:
 
 [ICD]
 UID: ICD-58
-TITLE: LiDAR Cloud (G1 → nav-planner)
+TITLE: LiDAR Raw Scan (G1 → FAST-LIO engine)
 COMM_TYPE: DDS Topic
 SOURCE: G1
-TARGET: nav-planner
-TOPIC: rt/utlidar/cloud_livox_mid360
-MSG_TYPE: sensor_msgs/PointCloud2
-QOS: Reliable
-FREQUENCY: ~10 Hz
+TARGET: FAST-LIO engine
+TOPIC: /livox/lidar
+MSG_TYPE: livox_ros_driver2 (raw Livox packet)
+QOS: BestEffort
+FREQUENCY: 10 Hz (Mid-360)
 STATEMENT: >>>
-Livox Mid-360 포인트클라우드. navigation-planner(gearsonic in-process lib)가 구독 → 필터 →
-시맨틱 occupancy grid에 융합한다. 같은 경로로 로봇 오도메트리 ``rt/dog_odom`` (nav_msgs/Odometry,
-~50 Hz, BestEffort)도 읽는다.
+Livox Mid-360 의 원시 스캔을 deepglint 의 수정 ``livox_ros_driver2`` 가 로봇 LAN 에서 직접 읽어
+``/livox/lidar`` 로 발행하고, 같은 엔진의 FAST-LIO 가 이를 소비한다.
+라이다 IP ``192.168.123.120``, 호스트 ``192.168.123.222`` (``lio_engine/config/MID360_config.json``).
 <<<
-PRECONDITION: G1 utlidar 활성
+PRECONDITION: LIO 엔진 데몬 실행 (``run_lio_daemon``)
+COMMENT: >>>
+**이전에는 nav-planner 가 Unitree 의 ``rt/utlidar/cloud_livox_mid360`` 릴레이를 직접 구독했다.
+그 경로는 폐기했다** — 릴레이의 클라우드가 직선 이동을 늘려 읽고 빠른 회전에서 겹침을 만들었다.
+원시 Livox 데이터를 FAST-LIO 에 직접 넣으면 사라진다 (실기 검증: 정지 시 안정, 1.5 m 이동을
+약 1.40 m 로 읽음, rviz 에서 벽이 고정).
+
+엔진은 우리 코드가 아니다 — deepglint ``FAST_LIO_LOCALIZATION_HUMANOID`` 를 커밋 고정해
+(``docker/Dockerfile`` 의 ARG) 빌드 시 받아 ``/opt/lio_ws`` 에 그대로 넣는다. 레포에 vendoring
+하지 않는다. 따라서 이 인터페이스에는 우리 구현 파일이 없고, 설정과 문서만 있다.
+
+엔진과 플래너는 **같은 이미지 안의 두 프로세스**\ 이며 localhost DDS 로만 통신한다
+(FastDDS ↔ CycloneDDS RTPS interop, 검증됨). ROS 2 는 플래너 빌드에 들어오지 않는다.
+<<<
 RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-45
   ROLE: Implements
 - TYPE: Parent
-  VALUE: SYS-REQ-32
+  VALUE: SYS-REQ-42
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/navigation-planner/lio_engine/config/MID360_config.json
+- TYPE: File
+  VALUE: _src/navigation-planner/lio_engine/config/mid360.yaml
+- TYPE: File
+  VALUE: _src/navigation-planner/docs/LIO_ENGINE.md
+
+[ICD]
+UID: ICD-85
+TITLE: LIO Odometry + Registered Cloud (FAST-LIO engine → nav-planner)
+COMM_TYPE: DDS Topic
+SOURCE: FAST-LIO engine
+TARGET: nav-planner
+TOPIC: rt/Odometry_loc · rt/cloud_registered_1
+MSG_TYPE: nav_msgs::msg::dds_::Odometry_ · sensor_msgs::msg::dds_::PointCloud2_
+QOS: BestEffort
+FREQUENCY: 10 Hz (스캔 주기)
+STATEMENT: >>>
+``rt/Odometry_loc`` 는 맵 좌표계의 라이다 pose (``T_odom_lidar``), ``rt/cloud_registered_1`` 은
+그 pose 로 정합된 스캔이다. 플래너는 전자로 변환 체인의 뿌리를 세우고, 후자로 3D voxel
+점유 격자와 costmap 을 만든다.
+
+``mid360.yaml`` 의 ``dense_publish_en: false`` 이므로 정합 클라우드는 다운샘플된 스캔이다
+(전체 약 2만 점이 필요하면 true).
+<<<
+PRECONDITION: LIO 엔진 데몬 실행, 사전 지도 적재
+COMMENT: >>>
+**플래너는 SLAM 을 직접 돌리지 않는다.** 이 두 토픽이 끊기면 플래너는 자기 위치를 모르므로
+아무 목적지도 수행할 수 없다 — 실기에서 nav 이 움직이지 않을 때 가장 먼저 볼 곳이다.
+
+두 프로세스가 같은 컨테이너의 localhost 에서만 통신하므로 네트워크 구성에는 드러나지 않는다.
+ROS 2 쪽이 발행하므로 타입·토픽 이름이 ``rt/`` + ``::msg::dds_::`` 형태다.
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-45
   ROLE: Implements
 - TYPE: File
   VALUE: _src/navigation-planner/src/lio/lio_receiver.cpp
 - TYPE: File
-  VALUE: _src/navigation-planner/src/unitree/unitree_odometry_reader.cpp
+  VALUE: _src/navigation-planner/src/lio/lio_transform_producer.cpp
 - TYPE: File
   VALUE: _src/navigation-planner/src/route_planner/perception/obstacle_mapper.cpp
 - TYPE: File
   VALUE: _src/navigation-planner/src/route_planner/perception/obstacle_grid_builder/obstacle_voxel_grid.cpp
+- TYPE: File
+  VALUE: _src/navigation-planner/lio_engine/lio_bringup.launch.py
 
 [ICD]
 UID: ICD-63
@@ -937,10 +986,17 @@ QOS: BestEffort
 FREQUENCY: 30 Hz
 STATEMENT: >>>
 RVL 무손실 Z16 + ``depth_scale`` + 카메라 intrinsics(``fx`` / ``fy`` / ``cx`` / ``cy``).
-navigation-planner가 세그멘테이션 결과와 결합해 로봇 좌표계의 labeled cloud를 만든다.
+세그멘테이션 결과와 결합해 로봇 좌표계의 labeled cloud 를 만드는 용도였다.
 <<<
 PRECONDITION: ext-sensor tx 활성
-COMMENT: Notion 원본은 소비처 TBD(Cortex)였으나 현재 소비처는 navigation-planner이다.
+COMMENT: >>>
+⚠ **수신측 보류.** navigation-planner 의 ``labeled_cloud`` 소비부가 LIO 재구성 때
+``_parked/labeled_cloud/`` 로 옮겨졌고, 지금 이 depth 프레임을 읽는 곳이 시스템에 없다.
+ext-sensor-io 는 계속 발행한다.
+
+발행측이 살아 있어 노드는 남겨 두었다. navigation-planner 가 세그멘테이션을 되살릴 계획이
+없다면 발행 자체를 끄는 것이 대역폭에 낫다 — nav 담당자 확인이 필요하다.
+<<<
 RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-42
