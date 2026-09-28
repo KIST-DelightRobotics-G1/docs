@@ -307,11 +307,29 @@ STATEMENT: >>>
 
 nav 는 ``action`` 이 ``move_to`` 인 것만 처리하고, ``args[0]`` 을 ``config/destinations.yaml``
 의 목적지 이름으로 해석한다. 그 밖의 action 은 ``unsupported`` 로 FAILED 를 돌려준다.
+
+**오케스트레이터의 송신 규칙** (nav · VLA 공통, ICD-75 도 같다):
+
+1. **다음 명령은 IDLE 뒤에 보낸다.** 직전 단계를 맡은 모듈이 ``DONE`` 뒤 ``IDLE`` 을 보내야
+   다음 subtask 를 보낸다 (첫 ``DONE`` 이 아니다). nav 와 VLA 는 둘 다 gearsonic 으로 몸을
+   움직이므로, ``DONE`` (도착) 이 아니라 ``IDLE`` (손 뗌) 을 확인하고 넘긴다.
+   ``DONE`` 뒤 ``idle_wait_s`` (1 s) 안에 ``IDLE`` 이 없으면 계획을 중단한다.
+2. **모든 멈춤은 cancel → IDLE 이다.** 사용자 "그만", 새 발화로 인한 선점, 단계 타임아웃
+   모두 ``cancel=true`` 를 즉시 보내고 ``IDLE`` 을 기다린다. 안전 지점까지 미룰지는 모듈이
+   정한다 (``detail`` 에 ``cancelled_at_safe_point``). ``safe_stop_*_s`` (nav 3 s · VLA 10 s)
+   안에 ``IDLE`` 이 없으면 **다음 계획을 시작하지 않고** 사용자에게 알린다.
+   예외는 계획 도중의 LLM 오류 하나로, 이때는 현재 단계를 끝까지 두되 단계 타임아웃을
+   넘기면 취소한다.
 <<<
 PRECONDITION: nav-planner 가 목적지 카탈로그를 적재한 상태
 COMMENT: >>>
 양측 구현 완료 (cortex ``743ce11`` / navigation-planner ``0a31cf9``, 2026-09-26).
 이전의 ``(미정) ActionCmd`` 를 이 계약으로 대체하였다.
+
+송신 규칙 1·2 는 cortex ``03b6e1d`` (#20, 2026-09-28). 같은 커밋이 취소 경로의 결함도
+고쳤다 — ``SubtaskCmd`` 에서 ``header`` 를 뺀 뒤에도 취소 송신이 ``header`` 를 채우려 해,
+그 사이 main 에서는 **취소를 보내는 순간 orchestrator_node 가 종료되었다**
+(``743ce11`` ~ ``03b6e1d``). 모듈 쪽은 바꿀 것이 없다.
 
 **DDS 이름 정합이 이 인터페이스의 핵심 위험이다.** 오케스트레이터가 ROS 2 노드이므로
 와이어에 올라가는 이름은 변형된 형태(``rt/`` 접두사, ``::msg::dds_::`` + 뒤 밑줄)이고,
@@ -354,6 +372,10 @@ STATEMENT: >>>
 
 ``DONE`` 과 ``FAILED`` 는 3회(300 ms) 반복 발행한 뒤 ``IDLE`` 로 돌아간다. ``IDLE`` 이
 "정리 완료, 새 명령 받을 수 있음" 신호다. 오케스트레이터는 1초 이상 끊기면 모듈 상실로 본다.
+
+오케스트레이터는 이 ``IDLE`` 을 받은 뒤에만 다음 명령을 보내고, 취소 뒤에도 ``IDLE`` 로
+정지를 확인한다 (ICD-70 송신 규칙). 멈추는 동안에는 ``RUNNING`` 을 계속 보내다가, 다
+멈추면 ``IDLE`` (``detail`` ``cancelled``) 을 보낸다 — 별도의 STOPPING 상태는 없다.
 <<<
 PRECONDITION: nav-planner 기동
 COMMENT: >>>
@@ -394,11 +416,18 @@ STATEMENT: >>>
 ICD-70 과 같은 타입이다. VLA 는 ``move_to`` 를 제외한 19개 action 을 처리하며,
 ``instruction`` 에 영어 지시문이 함께 온다 (예 ``Hand the cucumber to the person.``).
 지시문은 오케스트레이터가 ``config/actions.yaml`` 의 템플릿으로 만든다.
+
+송신 규칙은 ICD-70 과 같다 (다음 명령은 ``IDLE`` 뒤, 모든 멈춤은 cancel → ``IDLE``).
 <<<
 PRECONDITION: vla-inference 정책 적재 완료
 COMMENT: >>>
-양측 구현 완료 (2026-09-26). 취소 의미가 nav 와 다르다 — VLA 는 즉시 멈추지 않고
-현재 동작을 **안전 지점까지 끝낸 뒤** 중단한다 (``cancel_deferred``).
+양측 구현 완료 (2026-09-26).
+
+2026-09-28 (cortex ``03b6e1d``, #20) 부터 오케스트레이터가 VLA 에도 취소를 **즉시** 보낸다.
+이전에는 오케스트레이터가 스스로 "안전 지점까지 대기" 를 구현해 VLA 에 취소를 아예 보내지
+않았고, VLA 는 멈춰야 한다는 사실을 몰랐다. 지연 여부는 이제 모듈이 정한다.
+현재 vla-inference 는 취소·선점을 다음 추론 주기(~0.5 s) 안에 바로 반영한다
+(``cancel_deferred`` 를 쓰지 않음).
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -440,6 +469,13 @@ PRECONDITION: vla-inference 기동
 COMMENT: >>>
 양측 구현 완료 (2026-09-26). VLA 의 ``progress`` 는 추정값이라 판정에 쓰지 않는다 —
 성공 여부는 ``status`` 만으로 판단한다.
+
+**vla-inference 는 아직 위 규약과 다르게 동작한다** (2026-09-28 기준):
+
+- ``DONE`` 을 보내지 않는다. 완료 판정(진행도 추정기)이 없어 subtask 는 취소·선점·타임아웃
+  까지 ``RUNNING`` 이다. 그래서 오케스트레이터의 단계 타임아웃(30 s) 에서 취소 → ``IDLE``
+  로 끝나고, 다음 단계로 넘어가지 못한다.
+- ``FAILED`` 를 3회 뒤 ``IDLE`` 로 돌리지 않고 다음 유효 명령까지 유지한다.
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -792,11 +828,20 @@ STATEMENT: >>>
 ``kind`` 12종 (HEARD · THINKING · PLAN_LINE · PLAN_END · REPLY · STEP_START · STEP_DONE ·
 STEP_FAILED · GROUND · CANCEL · PLAN_DONE · NOTE) + ``index`` + ``title`` (화면에 그대로
 쓰는 한국어) + 본문.
+
+- ``NOTE`` 이고 ``index`` 가 -1 이면 계획을 세우지 못한 것이다. ``title`` 은 로봇이 실제로
+  말한 문장이다 (예 검증기 2 가 막은 장소: "그곳은 아직 갈 수 없습니다.").
+- ``CANCEL`` 의 ``title``: ``이동 취소`` · ``동작 취소`` (실행 중 단계에 cancel 송신),
+  ``다음 단계 전에 중단`` (단계 사이의 멈춤), ``계획 중단`` (실패·타임아웃),
+  ``현재 동작 완료 후 중단`` (계획 도중 LLM 오류).
 <<<
 PRECONDITION: gui_bridge_node 기동
 COMMENT: >>>
 gui_bridge 가 최근 이벤트를 고리 버퍼에 들고 있어, 늦게 접속한 화면에도 **지금 계획의
 이벤트를 되돌려 보여준다**. 시연 중 브라우저를 새로 열어도 진행 상황이 비지 않는다.
+
+``NOTE`` -1 의 문장은 cortex ``5859ffc`` (#18), ``CANCEL`` 제목은 ``03b6e1d`` (#20).
+화면 표시는 cortex-gui ``28a184a`` (#5).
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -820,8 +865,12 @@ MSG_TYPE: text = JSON status / binary = camera JPEG bytes
 QOS: N/A
 FREQUENCY: ~15 Hz
 STATEMENT: >>>
-**text (JSON):**
+**text, status (JSON, 구 계약 · 유지):**
 ``{scenario: str|null, subtask: {name: str, i: int, n: int}|null, state: 'idle|active|success|failed'}``
+
+**text, event (JSON):** ICD-80 ``/cortex/trace`` 한 건마다 한 메시지.
+``{type: 'event', t: float, plan_id: str, kind: str, index: int, title: str, body: str}``.
+늦게 접속한 client 에는 지금 계획의 event 를 먼저 되돌려 보낸다.
 
 **binary:** 최신 카메라 JPEG bytes (첫 프레임 전에는 생략).
 
@@ -830,11 +879,17 @@ latest-wins 백프레셔: 이전 broadcast 미완료 시 프레임을 drop 하�
 ``send_timeout_s`` 초과 client는 연결을 끊는다.
 <<<
 PRECONDITION: >>>
-gui_bridge_node 가 ``/cortex/task_status`` 와 ``/bridge/sensors/color/compressed`` 를 구독하여
-WebSocket으로 재발행한다. 브라우저 Display Renderer(``cortex-gui``, app.js)는 ``?ws=`` 쿼리로
+gui_bridge_node 가 ``/cortex/task_status`` · ``/cortex/trace`` · ``/bridge/sensors/color/compressed``
+를 구독하여 WebSocket으로 재발행한다. 브라우저 Display Renderer(``cortex-gui``, app.js)는 ``?ws=`` 쿼리로
 cortex 호스트를 지정한다. ROS 비의존, 단일 LAN, e2e ≤ 200 ms.
 <<<
-COMMENT: 2026-06-06 de-scope — estop / STT / TTS 필드 제외. JSON 계약의 소유자는 렌더러(cortex-gui).
+COMMENT: >>>
+2026-06-06 de-scope — estop / STT / TTS 필드 제외. JSON 계약의 소유자는 렌더러(cortex-gui).
+
+2026-09-28: 렌더러가 event 메시지로 생각의 흐름(HEARD · PLAN · NOW)을 그린다
+(cortex-gui ``28a184a``, #5). 렌더러는 cortex 와 별도 컨테이너(``kist-cortex-gui``, :8080)로,
+cortex 는 ``kist-cortex`` 컨테이너로 뜬다 (cortex-gui #6 · cortex #19). 계약 변화는 없다.
+<<<
 RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-41

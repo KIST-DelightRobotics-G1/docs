@@ -1,8 +1,8 @@
 {
-  "cortex": "743ce1185932c41a9f8bdc2814d00ce1164300e5",
-  "cortex-gui": "0e2153f925d02610f3c62954095330fe9370be89",
+  "cortex": "03b6e1d9e2bae97eb8760301ea65b0c211628c0d",
+  "cortex-gui": "66b6a268efa50b092b49ac586eb9ad7c5fa4ffee",
   "data-collector": "033cca22f1538ca25b43043a8c8dc0e2b946c575",
-  "docs": "fa9a6903660a3868f92cb2c0b6d42ff088d2ae67",
+  "docs": "ad67d5cc0eb0ffd0fdc054acb3ce26adc7c8817b",
   "ext-sensor-io": "71f86c329ff70066ad738162a8557f8aa1379023",
   "gearsonic-inference": "bf47fbb3291534ce0d608667aa06b6f843570265",
   "interface-msgs": "b732e2ff7c46e7c174bf49b5add12ddae2c25e9d",
