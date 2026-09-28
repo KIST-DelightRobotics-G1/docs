@@ -140,6 +140,10 @@ STATEMENT: >>>
 ``playing(bool)`` + ``current_chunk_id(uint32)`` + ``queue_depth(uint8)``.
 
 stt_node는 ``playing=true`` 인 동안 마이크를 뮤트하여 자체 음성 오인식을 방지한다(에코 캔슬).
+
+``playing`` 은 "보냈다" 가 아니라 "로봇이 아직 말하고 있다" 이다. ``PlayStream`` 은 로봇 쪽 버퍼에 넣고
+바로 돌아오므로, speaker_node 가 보낸 음성 길이로 재생이 끝날 시각을 계산해 그때까지 ``true`` 를 유지한다
+(cortex #25). 끼어들기가 오면 즉시 ``false`` 가 된다.
 <<<
 PRECONDITION: speaker_node 활성 (AudioClient)
 COMMENT: >>>
@@ -271,8 +275,11 @@ cortex ``SYS-REQ-29-speaker-node`` (#24). onboard 의 speaker_node 를 옮겼다
 rclpy 와 unitree_sdk2py 가 한 프로세스에서 같은 libddsc 를 쓰도록, 도커 이미지가 SDK 의 cyclonedds
 파이썬 바인딩을 ROS 의 CycloneDDS 로 빌드한다.
 
-⚠ 오디오 서비스는 G1 내부 PC 에서 돈다. cortex 는 멀티캐스트를 끄고 유니캐스트 peer 만 쓰므로
-``DDS_ROBOT_IP`` (기본 ``192.168.123.161``) 로 적어 둬야 찾는다 — **로봇에서 주소 확인 필요.**
+오디오 서비스는 G1 내부 PC 에서 돈다. Unitree 서비스를 포함한 로봇 쪽 모듈이 모두 멀티캐스트로
+탐색하므로 cortex 도 멀티캐스트로 찾는다 (cortex #25 — 유니캐스트 전용이던 이전 설정은 로봇 쪽과
+서로를 찾지 못했다). ``DDS_ROBOT_IP`` (기본 ``192.168.123.161``) 는 보조 peer 다.
+
+speaker_node 는 로봇 버퍼에 1.5 s (``lead_s``) 넘게 쌓이지 않도록 조각을 보내는 속도를 맞춘다.
 <<<
 RELATIONS:
 - TYPE: Parent
