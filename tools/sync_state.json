@@ -1,13 +1,13 @@
 {
-  "cortex": "03b6e1d9e2bae97eb8760301ea65b0c211628c0d",
+  "cortex": "728a49244798b12895e3b09202ec7a75b401d93e",
   "cortex-gui": "66b6a268efa50b092b49ac586eb9ad7c5fa4ffee",
   "data-collector": "033cca22f1538ca25b43043a8c8dc0e2b946c575",
-  "docs": "ad67d5cc0eb0ffd0fdc054acb3ce26adc7c8817b",
-  "ext-sensor-io": "71f86c329ff70066ad738162a8557f8aa1379023",
+  "docs": "54e4e978181f175203a7a545fb9a396b19086e8f",
+  "ext-sensor-io": "48c6ca9a7a3b63ee237a8db2a3ff118d84503db9",
   "gearsonic-inference": "bf47fbb3291534ce0d608667aa06b6f843570265",
   "interface-msgs": "b732e2ff7c46e7c174bf49b5add12ddae2c25e9d",
   "navigation-planner": "0a31cf9da3664356bec7383fb1e54e74d1612517",
   "safety-controller": "265532b13cd6488c8158b9da34fd8d78fc8b08be",
   "vision-training": "14ac598407da9dba7cfda8ee9a3bfb9b11433f85",
-  "vla-inference": "d26e3d0b23ab437dc979771b5595a5c8ffc10590"
+  "vla-inference": "e6c4af8b0656706339c2054edb8a14b9928afa4d"
 }

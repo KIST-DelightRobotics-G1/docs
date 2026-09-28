@@ -43,19 +43,24 @@ TITLE: Mic Audio (ext-sensor → stt)
 COMM_TYPE: DDS Topic
 SOURCE: ext-sensor-io
 TARGET: stt_node
-TOPIC: rt/kist/mic/audio
-MSG_TYPE: kist_msgs::AudioChunk
+TOPIC: rt/kist/mic/<name>/audio
+MSG_TYPE: kist_msgs::msg::dds_::AudioChunk_
 QOS: BestEffort
 FREQUENCY: continuous (100 ms chunk)
 STATEMENT: >>>
-``seq`` + ``stamp_ns`` + ``sample_rate=16000`` + ``channels=1`` + ``format=S16_LE``
-+ ``data`` (interleaved PCM). 100 ms 청크 단위 발행.
+``seq`` + ``stamp_ns`` + ``sample_rate`` + ``channels`` + ``format`` (``S16_LE``) + ``frame_id``
++ ``data`` (interleaved PCM). 100 ms 청크 단위, 장치 그대로의 속도 · 채널로 발행한다.
+시연 마이크는 ``array`` (reSpeaker XVF3800, 16 kHz × 6 ch).
+
+타입 이름이 ROS 2 형식이라 cortex 는 ROS 메시지 ``kist_msgs/AudioChunk`` 로
+``/kist/mic/array/audio`` 를 바로 구독한다. stt_node 는 **0 번 채널** (XVF3800 의 빔포밍 출력) 만
+꺼내 16 kHz 로 맞춘다.
 <<<
 PRECONDITION: mic(ALSA) 활성
 COMMENT: >>>
-stt_node는 ``g1_onboard_msgs/AudioPCM`` (``/bridge/sensors/audio_pcm``) 을 기대하므로
-타입·토픽 변환이 필요하다. 변환은 ext-sensor-io가 아니라 **cortex 측 어댑터(mic_bridge)** 가
-담당하기로 결정되었다 (SYS-REQ-27 브랜치, main 미머지).
+2026-09-28: ext-sensor-io ``48c6ca9`` (#3) 가 타입 이름을 ``kist_msgs::AudioChunk`` 에서 ROS 2 형식으로
+바꾸고, cortex ``728a492`` (#23) 가 도메인 0 에서 직접 읽는다. 예전에 계획한 변환 노드(mic_bridge)는
+만들지 않는다. 6 채널을 평균 내면 처리된 소리에 원본 잡음이 섞이므로 0 번 채널을 쓴다.
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -70,6 +75,12 @@ RELATIONS:
   VALUE: _src/ext-sensor-io/src/system/mic_transmitter.cpp
 - TYPE: File
   VALUE: _src/cortex/src/cortex_perception/cortex_perception/stt_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_perception/cortex_perception/ext_sensor.py
+- TYPE: File
+  VALUE: _src/cortex/src/kist_msgs/msg/AudioChunk.msg
+- TYPE: File
+  VALUE: _src/ext-sensor-io/idl/kist_audio_frames.idl
 
 [ICD]
 UID: ICD-33
@@ -121,7 +132,7 @@ TITLE: Speaker State (speaker → stt)
 COMM_TYPE: DDS Topic
 SOURCE: speaker_node
 TARGET: stt_node
-TOPIC: /bridge/audio/speaker_state
+TOPIC: /cortex/speaker/state
 MSG_TYPE: g1_onboard_msgs/SpeakerState
 QOS: Reliable
 FREQUENCY: 상태 변화 시 (push/pop transition)
@@ -131,11 +142,16 @@ STATEMENT: >>>
 stt_node는 ``playing=true`` 인 동안 마이크를 뮤트하여 자체 음성 오인식을 방지한다(에코 캔슬).
 <<<
 PRECONDITION: speaker_node 활성 (AudioClient)
-COMMENT: speaker_node는 cortex 소유로 결정 (SYS-REQ-29 브랜치, main 미머지).
+COMMENT: >>>
+speaker_node 가 cortex 에 들어왔다 (#24). 토픽 이름은 comm_bridge 시절의 ``/bridge/audio/speaker_state``
+에서 ``/cortex/speaker/state`` 로 바뀌었다.
+<<<
 RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-27
   ROLE: Implements
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_action/cortex_action/speaker_node.py
 - TYPE: File
   VALUE: _src/cortex/src/cortex_perception/cortex_perception/stt_node.py
 - TYPE: File
@@ -205,16 +221,20 @@ TITLE: TTS Audio Out (tts → speaker)
 COMM_TYPE: DDS Topic
 SOURCE: tts_node
 TARGET: speaker_node
-TOPIC: /bridge/cmd/audio_out
+TOPIC: /cortex/tts/audio
 MSG_TYPE: g1_onboard_msgs/AudioPCM
 QOS: Reliable
 FREQUENCY: On-demand
 STATEMENT: >>>
-16 kHz / mono / 16 bit PCM. CLOVA 24 kHz 출력을 16 kHz로 resample 후 발행한다.
-speaker_node가 ``AudioClient.PlayStream`` 으로 재생한다.
+16 kHz / mono / 16 bit PCM. CLOVA 24 kHz 출력을 16 kHz로 resample 후 32000 B (≈ 1 s) 조각으로 발행한다.
+speaker_node가 ``AudioClient.PlayStream`` 으로 재생한다 (ICD-86). ``header.stamp`` 는 끼어들기 때
+그 전에 만든 조각을 가려내는 데 쓴다 (ICD-69).
 <<<
 PRECONDITION: TTS 합성 완료 + speaker_node(AudioClient) 활성
-COMMENT: speaker_node는 cortex 소유로 결정 (SYS-REQ-29 브랜치, main 미머지). AudioClient 재생은 DDS RPC라 호스트 무관.
+COMMENT: >>>
+speaker_node 가 cortex 에 들어왔다 (#24). 토픽 이름은 ``/bridge/cmd/audio_out`` 에서 ``/cortex/tts/audio``
+로 바뀌었다. AudioClient 재생은 DDS RPC 라 로봇이 DDS 로 보이는 호스트면 된다.
+<<<
 RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-29
@@ -222,7 +242,46 @@ RELATIONS:
 - TYPE: File
   VALUE: _src/cortex/src/cortex_action/cortex_action/tts_node.py
 - TYPE: File
+  VALUE: _src/cortex/src/cortex_action/cortex_action/speaker_node.py
+- TYPE: File
   VALUE: _src/interface-msgs/msg/AudioPCM.msg
+
+[ICD]
+UID: ICD-86
+TITLE: Speaker Playback RPC (speaker_node → G1 audio service)
+COMM_TYPE: Call
+SOURCE: speaker_node
+TARGET: G1
+TOPIC: rt/api/voice/request · rt/api/voice/response
+MSG_TYPE: unitree_api::msg::dds_::Request_ · Response_
+QOS: Reliable
+FREQUENCY: 음성 조각마다 (최대 32000 B ≈ 1 s)
+STATEMENT: >>>
+Unitree SDK ``AudioClient`` 로 G1 오디오 서비스(``voice``)를 부르는 DDS RPC 다.
+``PlayStream`` (api 1003) 은 ``{app_name, stream_id}`` JSON 과 16 kHz · mono · 16 bit PCM 을
+``binary`` 에 실어 보내고, ``PlayStop`` (api 1004) 은 재생을 끊는다.
+한 문장이 한 ``stream_id`` 이고, 끼어들기 뒤의 문장은 새 ``stream_id`` 로 시작한다.
+
+두 호출 모두 응답을 기다린다 (``client_timeout_s`` 2 s). 기다리는 동안 speaker_node 는
+"재생 중" 을 알리므로 stt_node 의 마이크가 음소거된다.
+<<<
+PRECONDITION: G1 오디오 서비스 기동 + 도메인 0 에서 서비스 호스트가 보일 것
+COMMENT: >>>
+cortex ``SYS-REQ-29-speaker-node`` (#24). onboard 의 speaker_node 를 옮겼다 (onboard 는 더 쓰지 않음).
+rclpy 와 unitree_sdk2py 가 한 프로세스에서 같은 libddsc 를 쓰도록, 도커 이미지가 SDK 의 cyclonedds
+파이썬 바인딩을 ROS 의 CycloneDDS 로 빌드한다.
+
+⚠ 오디오 서비스는 G1 내부 PC 에서 돈다. cortex 는 멀티캐스트를 끄고 유니캐스트 peer 만 쓰므로
+``DDS_ROBOT_IP`` (기본 ``192.168.123.161``) 로 적어 둬야 찾는다 — **로봇에서 주소 확인 필요.**
+<<<
+RELATIONS:
+- TYPE: Parent
+  VALUE: SYS-REQ-29
+  ROLE: Implements
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_action/cortex_action/speaker_node.py
+- TYPE: File
+  VALUE: _src/cortex/config/cyclonedds.xml
 
 [ICD]
 UID: ICD-69
@@ -235,12 +294,19 @@ MSG_TYPE: std_msgs/Bool
 QOS: Reliable
 FREQUENCY: On-demand
 STATEMENT: >>>
-``data: bool`` (true = 합성 취소).
+``data: bool`` (true = 말 끊기).
 
-barge-in / preempt / E-STOP 시 orchestrator가 발사하면 tts_node가 PC측 합성 태스크를 취소한다.
-이미 스피커로 나간 오디오는 회수할 수 없다. fire-and-forget.
+"그만" · 새 발화로 인한 선점 때 orchestrator 가 발사한다. fire-and-forget.
+
+- tts_node: 진행 중인 합성을 취소한다.
+- speaker_node: 받은 시각 **이전에 발행된** 음성 조각을 큐와 전송 중인 것까지 버리고 ``PlayStop`` 을
+  부른다. 그 뒤에 오는 문장("멈춥니다.")은 새 stream 으로 재생된다.
 <<<
 PRECONDITION: orchestrator preempt/fail 경로
+COMMENT: >>>
+2026-09-28: E-STOP 입력은 쓰지 않기로 해 stt · tts 에서 뺐다 (cortex ``c241f96``, #22).
+speaker_node 도 이 토픽을 받는다 (#24) — 예전 onboard speaker_node 는 큐에 든 음성을 끝까지 재생했다.
+<<<
 RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-29
@@ -249,6 +315,8 @@ RELATIONS:
   VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
 - TYPE: File
   VALUE: _src/cortex/src/cortex_action/cortex_action/tts_node.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_action/cortex_action/speaker_node.py
 
 [ICD]
 UID: ICD-83
@@ -416,6 +484,11 @@ STATEMENT: >>>
 ICD-70 과 같은 타입이다. VLA 는 ``move_to`` 를 제외한 19개 action 을 처리하며,
 ``instruction`` 에 영어 지시문이 함께 온다 (예 ``Hand the cucumber to the person.``).
 지시문은 오케스트레이터가 ``config/actions.yaml`` 의 템플릿으로 만든다.
+
+시연 보정으로 LLM 계획에 없는 두 동작이 끼어 나갈 수 있다 (``config/plan_rewrites.yaml``, cortex #21):
+``open(fridge_door)`` 과 ``pick`` 사이의 ``approach`` (``Approach the refrigerator.``),
+``pick`` 과 ``close(fridge_door)`` 사이의 ``step_back`` (``Step back from the refrigerator.``).
+VLA 학습 문장과 맞춰야 한다.
 
 송신 규칙은 ICD-70 과 같다 (다음 명령은 ``IDLE`` 뒤, 모든 멈춤은 cancel → ``IDLE``).
 <<<
@@ -751,7 +824,7 @@ COMM_TYPE: DDS Topic
 SOURCE: ext-sensor-io
 TARGET: detector_node
 TOPIC: rt/kist/camera/<name>/color/h264
-MSG_TYPE: kist_msgs (H.264 color frame)
+MSG_TYPE: kist_msgs::msg::dds_::CompressedColorFrame_
 QOS: BestEffort
 FREQUENCY: 30 Hz
 STATEMENT: >>>
@@ -759,11 +832,18 @@ H.264 NAL + ``seq`` / ``stamp`` / ``width`` / ``height`` / ``keyframe``.
 카메라 이름(``head`` / 양 손목)별 토픽.
 
 소비처: detector_node(대상 확인) · gui_bridge_node(표시) · vla-inference(정책 관측).
+
+cortex 는 ROS 메시지 ``kist_msgs/CompressedColorFrame`` 으로 ``/kist/camera/head/color/h264`` 를 구독해
+PyAV 로 디코드한다. gui_bridge 는 최신 프레임만 JPEG 로 (≤ 15 Hz) 내보내고, detector 는
+``backend: always`` 인 동안 카메라를 구독하지 않는다.
 <<<
 PRECONDITION: ext-sensor tx(카메라) 활성
 COMMENT: >>>
 TARGET 은 대표 소비처(detector_node)만 표기. 실제 소비처는 File 관계 참조.
 navigation-planner 의 세그멘테이션 소비부는 LIO 재구성 때 _parked/ 로 보류되었다.
+
+2026-09-28: 타입 이름을 ``kist_msgs::CompressedColorFrame`` 에서 ROS 2 형식으로 바꿨다
+(ext-sensor-io ``48c6ca9`` #3 · vla-inference ``e6c4af8`` #3 · cortex ``728a492`` #23, 같이 머지).
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -785,6 +865,12 @@ RELATIONS:
   VALUE: _src/cortex/src/cortex_gui/cortex_gui/gui_bridge_node.py
 - TYPE: File
   VALUE: _src/vla-inference/src/vla/io/realsense/color_subscriber.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_perception/cortex_perception/ext_sensor.py
+- TYPE: File
+  VALUE: _src/cortex/src/kist_msgs/msg/CompressedColorFrame.msg
+- TYPE: File
+  VALUE: _src/ext-sensor-io/idl/kist_camera_frames.idl
 
 [ICD]
 UID: ICD-67
@@ -879,8 +965,8 @@ latest-wins 백프레셔: 이전 broadcast 미완료 시 프레임을 drop 하�
 ``send_timeout_s`` 초과 client는 연결을 끊는다.
 <<<
 PRECONDITION: >>>
-gui_bridge_node 가 ``/cortex/task_status`` · ``/cortex/trace`` · ``/bridge/sensors/color/compressed``
-를 구독하여 WebSocket으로 재발행한다. 브라우저 Display Renderer(``cortex-gui``, app.js)는 ``?ws=`` 쿼리로
+gui_bridge_node 가 ``/cortex/task_status`` · ``/cortex/trace`` · ``/kist/camera/head/color/h264``
+(ICD-62, H.264 → JPEG) 를 구독하여 WebSocket으로 재발행한다. 브라우저 Display Renderer(``cortex-gui``, app.js)는 ``?ws=`` 쿼리로
 cortex 호스트를 지정한다. ROS 비의존, 단일 LAN, e2e ≤ 200 ms.
 <<<
 COMMENT: >>>
@@ -1036,7 +1122,7 @@ COMM_TYPE: DDS Topic
 SOURCE: ext-sensor-io
 TARGET: nav-planner
 TOPIC: rt/kist/camera/<name>/depth/rvl
-MSG_TYPE: kist_msgs (RVL depth frame)
+MSG_TYPE: kist_msgs::msg::dds_::CompressedDepthFrame_
 QOS: BestEffort
 FREQUENCY: 30 Hz
 STATEMENT: >>>
@@ -1051,6 +1137,8 @@ ext-sensor-io 는 계속 발행한다.
 
 발행측이 살아 있어 노드는 남겨 두었다. navigation-planner 가 세그멘테이션을 되살릴 계획이
 없다면 발행 자체를 끄는 것이 대역폭에 낫다 — nav 담당자 확인이 필요하다.
+
+2026-09-28: color · audio 와 함께 타입 이름을 ROS 2 형식으로 바꿨다 (ext-sensor-io ``48c6ca9``).
 <<<
 RELATIONS:
 - TYPE: Parent
