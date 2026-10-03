@@ -1,8 +1,8 @@
 [DOCUMENT]
 TITLE: KIST DRL G1 인터페이스 정의서 (ICD)
 UID: DOC-ICD
-VERSION: 0.3
-DATE: 2026-09-12
+VERSION: 0.4
+DATE: 2026-10-03
 CLASSIFICATION: Internal
 OPTIONS:
   MARKUP: RST
@@ -21,6 +21,11 @@ STATEMENT: >>>
 요구사항 → 인터페이스 → 구현 파일의 연결을 확인할 수 있다.
 구현 파일은 빌드 시 ``tools/fetch_sources.py`` 가 ``_src/<repo>/`` 로 체크아웃한다.
 
+각 섹션(데이터 경로)은 **소개 → 흐름도 → 인터페이스** 순서다. 흐름도는 손으로 그리지 않고
+``tools/gen_arch.py`` 가 그 섹션의 ICD 노드에서 생성한다. 화살표의 양 끝은 송·수신
+컨테이너, 라벨은 ICD 번호, 실선은 DDS 토픽, 점선은 DDS 외 통신(HTTPS · gRPC · WebSocket)이다.
+구현 상태는 그림에 표시하지 않는다 — 각 노드의 ``File`` 관계와 **Source coverage** 화면에서 확인한다.
+
 .. note::
 
    본 문서는 Notion ``ICD`` 데이터베이스(22건)를 이관한 것이며(이후 ICD-72부터는 코드 동기화로 추가), UID 번호는 Notion 시절
@@ -35,6 +40,35 @@ TITLE: 음성 입력 경로 (STT)
 STATEMENT: >>>
 마이크 → STT → orchestrator 로 이어지는 음성 인식 경로이다.
 ``SYS-REQ-42`` (센서 수집) 와 ``SYS-REQ-27`` (음성 인식) 을 함께 구현한다.
+<<<
+
+[TEXT]
+STATEMENT: >>>
+.. gen_arch: 아래 흐름도는 tools/gen_arch.py 가 이 섹션의 ICD 노드에서 생성한다. 직접 편집하지 말 것.
+
+.. raw:: html
+
+   <div style="overflow-x:auto; max-width:100%;">
+   <pre class="mermaid">
+      flowchart TB
+        subgraph onboard["Unitree G1 (NX) — Onboard"]
+          n_ext_sensor_io["ext-sensor-io"]
+          n_speaker_node["speaker_node"]
+        end
+        subgraph workstation["PC (RTX 4090) — Workstation"]
+          n_stt_node["stt_node"]
+          n_orchestrator_node["orchestrator_node"]
+        end
+        subgraph external["External"]
+          n_Google_Cloud_STT["Google Cloud STT"]
+        end
+
+        n_ext_sensor_io -->|"ICD-3"| n_stt_node
+        n_stt_node -.->|"ICD-33"| n_Google_Cloud_STT
+        n_stt_node -->|"ICD-64"| n_orchestrator_node
+        n_speaker_node -->|"ICD-42"| n_stt_node
+   </pre>
+   </div>
 <<<
 
 [ICD]
@@ -169,6 +203,37 @@ TITLE: 음성 출력 경로 (TTS)
 [TEXT]
 STATEMENT: >>>
 orchestrator → TTS → 스피커로 이어지는 음성 응답 경로이다. ``SYS-REQ-29`` 를 구현한다.
+<<<
+
+[TEXT]
+STATEMENT: >>>
+.. gen_arch: 아래 흐름도는 tools/gen_arch.py 가 이 섹션의 ICD 노드에서 생성한다. 직접 편집하지 말 것.
+
+.. raw:: html
+
+   <div style="overflow-x:auto; max-width:100%;">
+   <pre class="mermaid">
+      flowchart TB
+        subgraph onboard["Unitree G1 (NX) — Onboard"]
+          n_G1["G1"]
+          n_speaker_node["speaker_node"]
+        end
+        subgraph workstation["PC (RTX 4090) — Workstation"]
+          n_orchestrator_node["orchestrator_node"]
+          n_tts_node["tts_node"]
+        end
+        subgraph external["External"]
+          n_Naver_CLOVA_TTS["Naver CLOVA TTS"]
+        end
+
+        n_orchestrator_node -->|"ICD-68"| n_tts_node
+        n_tts_node -.->|"ICD-34"| n_Naver_CLOVA_TTS
+        n_tts_node -->|"ICD-8"| n_speaker_node
+        n_speaker_node -->|"ICD-86"| n_G1
+        n_orchestrator_node -->|"ICD-69"| n_tts_node
+        n_orchestrator_node -->|"ICD-83"| n_tts_node
+   </pre>
+   </div>
 <<<
 
 [ICD]
@@ -363,6 +428,41 @@ STATEMENT: >>>
 발화에서 subtask 를 만들고(LLM), 조작 직전에 대상을 확인하고(detector),
 실행 모듈(nav / VLA)에 나눠 보내는 경로이다. 성공 여부는 모듈이 돌려주는 상태로만 판정한다.
 ``SYS-REQ-44`` (시나리오 실행) 를 중심으로 ``SYS-REQ-31`` / ``SYS-REQ-45`` 의 명령 진입점을 포함한다.
+<<<
+
+[TEXT]
+STATEMENT: >>>
+.. gen_arch: 아래 흐름도는 tools/gen_arch.py 가 이 섹션의 ICD 노드에서 생성한다. 직접 편집하지 말 것.
+
+.. raw:: html
+
+   <div style="overflow-x:auto; max-width:100%;">
+   <pre class="mermaid">
+      flowchart TB
+        subgraph workstation["PC (RTX 4090) — Workstation"]
+          n_orchestrator_node["orchestrator_node"]
+          n_gearsonic["gearsonic"]
+          n_nav_planner["nav-planner"]
+          n_Cortex["Cortex"]
+        end
+        n_Gemini_API["Gemini API (구역 미지정)"]
+        n_detector_node["detector_node (구역 미지정)"]
+        n_llm_node["llm_node (구역 미지정)"]
+        n_vla_inference["vla-inference (구역 미지정)"]
+
+        n_orchestrator_node -->|"ICD-70"| n_nav_planner
+        n_nav_planner -->|"ICD-74"| n_orchestrator_node
+        n_orchestrator_node -->|"ICD-75"| n_vla_inference
+        n_vla_inference -->|"ICD-76"| n_orchestrator_node
+        n_orchestrator_node -->|"ICD-77"| n_llm_node
+        n_llm_node -->|"ICD-78"| n_orchestrator_node
+        n_orchestrator_node -->|"ICD-79"| n_detector_node
+        n_llm_node -.->|"ICD-81"| n_Gemini_API
+        n_nav_planner -->|"ICD-82"| n_orchestrator_node
+        n_detector_node -->|"ICD-84"| n_Cortex
+        n_nav_planner -->|"ICD-72"| n_gearsonic
+   </pre>
+   </div>
 <<<
 
 [ICD]
@@ -824,6 +924,35 @@ STATEMENT: >>>
 카메라 영상과 태스크 상태를 외부 디스플레이로 내보내는 경로이다. ``SYS-REQ-41`` / ``SYS-REQ-49`` 를 구현한다.
 <<<
 
+[TEXT]
+STATEMENT: >>>
+.. gen_arch: 아래 흐름도는 tools/gen_arch.py 가 이 섹션의 ICD 노드에서 생성한다. 직접 편집하지 말 것.
+
+.. raw:: html
+
+   <div style="overflow-x:auto; max-width:100%;">
+   <pre class="mermaid">
+      flowchart TB
+        subgraph onboard["Unitree G1 (NX) — Onboard"]
+          n_ext_sensor_io["ext-sensor-io"]
+        end
+        subgraph workstation["PC (RTX 4090) — Workstation"]
+          n_orchestrator_node["orchestrator_node"]
+          n_gui_bridge_node["gui_bridge_node"]
+        end
+        subgraph external["External"]
+          n_Display_Renderer["Display Renderer"]
+        end
+        n_detector_node["detector_node (구역 미지정)"]
+
+        n_ext_sensor_io -->|"ICD-62"| n_detector_node
+        n_orchestrator_node -->|"ICD-67"| n_gui_bridge_node
+        n_orchestrator_node -->|"ICD-80"| n_gui_bridge_node
+        n_gui_bridge_node -.->|"ICD-55"| n_Display_Renderer
+   </pre>
+   </div>
+<<<
+
 [ICD]
 UID: ICD-62
 TITLE: Camera Color (ext-sensor → PC)
@@ -1006,6 +1135,32 @@ STATEMENT: >>>
 ``SYS-REQ-42`` (센서 수집) 와 ``SYS-REQ-45`` (자율 보행) 를 구현한다.
 <<<
 
+[TEXT]
+STATEMENT: >>>
+.. gen_arch: 아래 흐름도는 tools/gen_arch.py 가 이 섹션의 ICD 노드에서 생성한다. 직접 편집하지 말 것.
+
+.. raw:: html
+
+   <div style="overflow-x:auto; max-width:100%;">
+   <pre class="mermaid">
+      flowchart TB
+        subgraph onboard["Unitree G1 (NX) — Onboard"]
+          n_G1["G1"]
+          n_ext_sensor_io["ext-sensor-io"]
+        end
+        subgraph workstation["PC (RTX 4090) — Workstation"]
+          n_nav_planner["nav-planner"]
+        end
+        n_FAST_LIO_engine["FAST-LIO engine (구역 미지정)"]
+
+        n_ext_sensor_io -->|"ICD-36"| n_nav_planner
+        n_G1 -->|"ICD-58"| n_FAST_LIO_engine
+        n_FAST_LIO_engine -->|"ICD-85"| n_nav_planner
+        n_ext_sensor_io -->|"ICD-63"| n_nav_planner
+   </pre>
+   </div>
+<<<
+
 [ICD]
 UID: ICD-36
 TITLE: UWB Pose (ext-sensor → nav-planner)
@@ -1168,6 +1323,31 @@ TITLE: 저수준 제어 및 안전
 STATEMENT: >>>
 로봇 상태 수신과 관절 명령 발행의 실시간 경로이다.
 ``SYS-REQ-32`` (양방향 통신) · ``SYS-REQ-34`` (연속 모터 제어) · ``SYS-REQ-35`` (E-STOP) 를 구현한다.
+<<<
+
+[TEXT]
+STATEMENT: >>>
+.. gen_arch: 아래 흐름도는 tools/gen_arch.py 가 이 섹션의 ICD 노드에서 생성한다. 직접 편집하지 말 것.
+
+.. raw:: html
+
+   <div style="overflow-x:auto; max-width:100%;">
+   <pre class="mermaid">
+      flowchart TB
+        subgraph onboard["Unitree G1 (NX) — Onboard"]
+          n_G1["G1"]
+        end
+        subgraph workstation["PC (RTX 4090) — Workstation"]
+          n_gearsonic["gearsonic"]
+        end
+
+        n_G1 -->|"ICD-4"| n_gearsonic
+        n_G1 -->|"ICD-41"| n_gearsonic
+        n_gearsonic -->|"ICD-50"| n_G1
+        n_gearsonic -->|"ICD-6"| n_G1
+        n_G1 -->|"ICD-73"| n_gearsonic
+   </pre>
+   </div>
 <<<
 
 [ICD]

@@ -40,8 +40,8 @@ jobs:
       - name: Install StrictDoc
         run: pip install -r requirements.txt
 
-      # 아키텍처 도면이 ICD와 어긋나면 경고 (수정: python tools/gen_arch.py)
-      - name: Check generated architecture is up to date (warning)
+      # ICD 섹션 흐름도가 ICD 노드와 어긋나면 경고 (수정: python tools/gen_arch.py)
+      - name: Check ICD section diagrams are up to date (warning)
         continue-on-error: true
         run: python tools/gen_arch.py --check
 
