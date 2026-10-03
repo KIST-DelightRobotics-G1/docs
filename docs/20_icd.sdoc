@@ -519,23 +519,14 @@ status 만으로** 완료·실패를 판정한다. 완료 기준(nav 도착 반�
      - 다른 id 의 cancel
      - RUNNING
      - 무시
-   * - RUNNING
-     - 다른 id 의 Cmd (선점)
-     - RUNNING (새 값)
-     - 현재 것을 멈추고 새 것을 시작한다. 이전 것의 DONE · FAILED 는 내지 않는다.
-       위험하면 안전 지점까지 진행하는 동안 ``preempt_deferred``
-   * - RUNNING
-     - 같은 id 의 Cmd 재수신
-     - RUNNING
-     - 무시 (재시작하지 않는다)
+   * - RUNNING · DONE · FAILED
+     - Cmd 수신 (같은 id 재전송 포함)
+     - (그대로)
+     - 무시. 오케스트레이터는 IDLE 인 모듈에만 Cmd 를 보낸다 (3 절) — **Cmd 로 하는 선점은 없다**
    * - DONE · FAILED
      - 3회(0.3 s) 발행 완료
      - IDLE
      -
-   * - DONE · FAILED
-     - 3회 전에 새 Cmd 수신
-     - RUNNING (새 값)
-     - 남은 반복을 기다리지 않는다
 
 **2. 발행 규칙** (모듈)
 
@@ -550,11 +541,15 @@ status 만으로** 완료·실패를 판정한다. 완료 기준(nav 도착 반�
 
 **3. 판정 규칙** (오케스트레이터)
 
-- **다음 Cmd 는 IDLE 뒤에 보낸다.** 같은 id 의 DONE 을 받으면 그 단계를 완료로 기록하고, 그
-  모듈이 IDLE 을 보낼 때 다음 Cmd 를 보낸다. ``idle_wait_s`` 안에 IDLE 이 없으면 계획을
-  중단한다. nav 와 VLA 는 둘 다 gearsonic 으로 몸을 움직이므로 "도착"(DONE) 이 아니라
-  "손 뗌"(IDLE) 을 확인하고 넘긴다.
-- **모든 멈춤은 cancel → IDLE 이다.** 사용자 "그만", 새 발화에 의한 선점, 단계 타임아웃 모두
+- **Cmd 는 마지막 보고가 IDLE 인 모듈에만 보낸다.** 모든 Cmd(새 계획의 첫 단계, 다른 모듈로
+  넘어가는 단계 포함)에 적용한다. IDLE 이 아니면 보내지 않고 IDLE 을 기다린다. 그 모듈이
+  버려진 이전 단계로 아직 RUNNING 이면 보고된 id 로 cancel 을 보낸다. ``safe_stop_timeout_s``
+  안에 IDLE 이 없으면 아무것도 보내지 않고 계획을 중단하며 사용자에게 알린다.
+- **단계가 끝나면 DONE 이 아니라 IDLE 을 기다린다.** 같은 id 의 DONE 을 받으면 그 단계를
+  완료로 기록하고, 그 모듈이 IDLE 을 보낼 때 다음 Cmd 를 보낸다. ``idle_wait_s`` 안에 IDLE 이
+  없으면 계획을 중단한다. nav 와 VLA 는 둘 다 gearsonic 으로 몸을 움직이므로 "도착"(DONE) 이
+  아니라 "손 뗌"(IDLE) 을 확인하고 넘긴다.
+- **모든 멈춤은 cancel → IDLE 이다.** 사용자 "그만", 새 발화로 계획을 바꿀 때, 단계 타임아웃 모두
   cancel 을 즉시 보내고 IDLE 을 기다린다 (4 절). 예외는 계획 도중 LLM 오류 하나로, 이때는 현재
   단계를 끝까지 두되 단계 타임아웃을 넘기면 취소한다.
 - ``plan_id`` · ``index`` 가 현재 단계와 다른 상태는 무시한다 (이전 계획의 늦은 보고 등). 같은 id 의
@@ -568,7 +563,7 @@ status 만으로** 완료·실패를 판정한다. 완료 기준(nav 도착 반�
   동안 다음 줄을 기다린다. ``end`` 는 경계 표시일 뿐이며 성공의 근거는 언제나 모듈의 DONE 이다.
 - 한 시점에 실행 중인 subtask 는 하나다. 두 모듈에 동시에 Cmd 를 보내지 않는다.
 
-**4. 취소와 선점**
+**4. 취소** (새 발화로 계획을 바꿀 때 포함)
 
 1. 오케스트레이터가 현재 ``plan_id`` · ``index`` 로 ``cancel=true`` 를 보낸다.
 2. 모듈은 ``cancel_ack_s`` 안에 IDLE (``cancelled``) 또는 RUNNING (``cancel_deferred: …``) 으로 답한다.
@@ -576,8 +571,8 @@ status 만으로** 완료·실패를 판정한다. 완료 기준(nav 도착 반�
 4. IDLE 이 오면 새 계획의 첫 Cmd 를 보낸다. 시간 안에 IDLE 이 없으면 **새 계획을 시작하지 않고**
    사용자에게 알린다.
 
-cancel 이 유실되어도 새 Cmd 가 선점으로 현재 동작을 멈추게 한다 (1 절). cancel 은 새 명령 없이
-멈출 때(사용자 "그만") 쓰는 경로다. 즉시 멈출지 안전 지점까지 갈지는 모듈이 정한다.
+Cmd 로 하는 선점이 없으므로 **cancel 이 멈추는 유일한 경로다.** ``cancel_ack_s`` 안에 IDLE 도
+``cancel_deferred`` 도 없으면 cancel 을 1회 재전송한다. 즉시 멈출지 안전 지점까지 갈지는 모듈이 정한다.
 
 **5. 시간 파라미터**
 
@@ -628,7 +623,7 @@ cancel 이 유실되어도 새 Cmd 가 선점으로 현재 동작을 멈추게 �
    * - ``cancel_ack_s``
      - 0.5 s
      - 오케스트레이터
-     - IDLE 또는 ``cancel_deferred`` 응답 기한
+     - IDLE 또는 ``cancel_deferred`` 응답 기한. 넘기면 cancel 1회 재전송
    * - ``safe_stop_timeout_s``
      - nav 3 s · VLA 10 s
      - 오케스트레이터
@@ -650,8 +645,6 @@ cancel 이 유실되어도 새 Cmd 가 선점으로 현재 동작을 멈추게 �
      - cancel 을 받았으나 안전 지점까지 진행 중인 RUNNING
    * - ``cancelled_at_safe_point``
      - 유예 후 안전 지점에서 멈춘 IDLE
-   * - ``preempt_deferred``
-     - 새 Cmd 를 받았으나 안전 지점까지 진행 중인 RUNNING (이전 id 로 보고)
    * - ``unsupported: <이유>``
      - 미지원 action · 불량 args · 빈 instruction 으로 FAILED
    * - ``timeout <초>s``
@@ -723,6 +716,9 @@ PRECONDITION: nav-planner 가 목적지 카탈로그를 적재한 상태
 COMMENT: >>>
 양측 구현 완료 (cortex ``743ce11`` / navigation-planner ``0a31cf9``, 2026-09-26).
 이전의 ``(미정) ActionCmd`` 를 이 계약으로 대체하였다.
+
+2026-10-03 (cortex #26): Cmd 는 마지막 보고가 IDLE 인 모듈에만 보낸다 — Cmd 로 하는 선점을 없앴다
+(VLA 측 요청). 응답 없는 cancel 은 1회 재전송한다.
 
 송신 규칙 1·2 는 cortex ``03b6e1d`` (#20, 2026-09-28). 같은 커밋이 취소 경로의 결함도
 고쳤다 — ``SubtaskCmd`` 에서 ``header`` 를 뺀 뒤에도 취소 송신이 ``header`` 를 채우려 해,
@@ -828,7 +824,7 @@ COMMENT: >>>
 2026-09-28 (cortex ``03b6e1d``, #20) 부터 오케스트레이터가 VLA 에도 취소를 **즉시** 보낸다.
 이전에는 오케스트레이터가 스스로 "안전 지점까지 대기" 를 구현해 VLA 에 취소를 아예 보내지
 않았고, VLA 는 멈춰야 한다는 사실을 몰랐다. 지연 여부는 이제 모듈이 정한다.
-현재 vla-inference 는 취소·선점을 다음 추론 주기(~0.5 s) 안에 바로 반영한다
+현재 vla-inference 는 취소를 다음 추론 주기(~0.5 s) 안에 바로 반영한다
 (``cancel_deferred`` 를 쓰지 않음).
 <<<
 RELATIONS:
@@ -873,7 +869,7 @@ COMMENT: >>>
 
 **vla-inference main 은 아직 규약과 다르게 동작한다** (2026-10-03 기준):
 
-- ``DONE`` 을 보내지 않는다. 완료 판정(진행도 추정기)이 없어 subtask 는 취소·선점·타임아웃
+- ``DONE`` 을 보내지 않는다. 완료 판정(진행도 추정기)이 없어 subtask 는 취소·타임아웃
   까지 ``RUNNING`` 이다. 그래서 오케스트레이터의 단계 타임아웃(30 s) 에서 취소 → ``IDLE``
   로 끝나고, 다음 단계로 넘어가지 못한다.
 - ``FAILED`` 를 3회 뒤 ``IDLE`` 로 돌리지 않고 다음 유효 명령까지 유지한다.
