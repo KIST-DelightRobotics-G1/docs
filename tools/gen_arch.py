@@ -53,10 +53,12 @@ ZONES: list[tuple[str, str, list[str]]] = [
         "PC (RTX 4090) — Workstation",
         [
             "stt_node",
-            "vlm_node",
             "orchestrator_node",
+            "llm_node",
+            "detector_node",
             "tts_node",
             "gui_bridge_node",
+            "vla-inference",
             "gearsonic",
             "nav-planner",
             "Cortex",
@@ -65,7 +67,7 @@ ZONES: list[tuple[str, str, list[str]]] = [
     (
         "external",
         "External",
-        ["Google Cloud STT", "Naver CLOVA TTS", "VLM API", "Display Renderer"],
+        ["Google Cloud STT", "Naver CLOVA TTS", "Gemini API", "Display Renderer"],
     ),
 ]
 
