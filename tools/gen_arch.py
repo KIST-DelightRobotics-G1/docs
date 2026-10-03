@@ -61,6 +61,7 @@ ZONES: list[tuple[str, str, list[str]]] = [
             "vla-inference",
             "gearsonic",
             "nav-planner",
+            "FAST-LIO engine",
             "Cortex",
         ],
     ),

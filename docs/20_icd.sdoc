@@ -1374,8 +1374,8 @@ STATEMENT: >>>
         end
         subgraph workstation["PC (RTX 4090) — Workstation"]
           n_nav_planner["nav-planner"]
+          n_FAST_LIO_engine["FAST-LIO engine"]
         end
-        n_FAST_LIO_engine["FAST-LIO engine (구역 미지정)"]
 
         n_ext_sensor_io -->|"ICD-36"| n_nav_planner
         n_G1 -->|"ICD-58"| n_FAST_LIO_engine
