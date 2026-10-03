@@ -37,11 +37,10 @@ docs/
 │   ├── kist_g1.sgra             공용 문법 — 노드 타입과 필드 스키마 (한 곳만 고친다)
 │   ├── 00_overview.sdoc         프로젝트 개요 · 읽는 법
 │   ├── 10_sys_req.sdoc          시스템 요구사항 (추적 트리의 ROOT)
-│   ├── 20_icd.sdoc              인터페이스 정의서
-│   ├── 30_verification.sdoc     검증 계획 — 시연(Demonstration) 기준
-│   └── 40_architecture.sdoc     아키텍처 — ICD에서 자동 생성 (직접 편집 금지)
+│   ├── 20_icd.sdoc              인터페이스 정의서 — 섹션마다 흐름도 자동 생성
+│   └── 30_verification.sdoc     검증 계획 — 시연(Demonstration) 기준
 ├── tools/
-│   ├── gen_arch.py              ICD → Mermaid 다이어그램 생성기
+│   ├── gen_arch.py              ICD 노드 → ICD 섹션 머리의 Mermaid 흐름도 생성기
 │   ├── fetch_sources.py         개발 레포들을 _src/ 로 체크아웃 (소스 추적성용)
 │   └── repos.json               대상 레포 목록
 └── .github/workflows/docs.yml   빌드 + GitHub Pages 배포
@@ -76,7 +75,7 @@ docs/
 ## 편집 워크플로 (변경 통제)
 
 1. 브랜치를 만들고 `docs/*.sdoc` 을 편집한다 (텍스트 또는 `strictdoc server .`).
-2. ICD를 바꿨으면 `python tools/gen_arch.py` 로 아키텍처 문서를 다시 생성한다.
+2. ICD를 바꿨으면 `python tools/gen_arch.py` 로 ICD 섹션 흐름도를 다시 생성한다.
 3. `strictdoc export . --output-dir output` 으로 로컬 빌드를 확인한다.
 4. PR → 리뷰 1명 → `main` 머지 → CI가 Pages 사이트를 갱신한다.
 5. 시연 마일스톤마다 태그를 남긴다. 릴리스 간 변경 리포트:
@@ -91,11 +90,12 @@ docs/
 
 | 도면 | 원천 | 변경 빈도 | 역할 |
 |---|---|---|---|
-| `docs/40_architecture.sdoc` | ICD에서 `tools/gen_arch.py` 로 **생성** | 인터페이스 바뀔 때마다 | 경로별 상세. ICD와 어긋날 수 없음 |
+| ICD 섹션 머리의 흐름도 (`docs/20_icd.sdoc`) | ICD 노드에서 `tools/gen_arch.py` 로 **생성** | 인터페이스 바뀔 때마다 | 경로별 상세. ICD와 어긋날 수 없음 |
 | `docs/_assets/c4_container_architecture.svg` | draw.io **수작업** (프로젝트 개요 문서에 첨부) | 컨테이너 추가·삭제 때만 | 전체 그림 · 발표용 |
 
-생성 도면은 직접 편집하지 않는다. `python tools/gen_arch.py --check` 가 "ICD는 바뀌었는데
-도면은 안 바뀐" 상태를 잡는다 (CI에서는 경고).
+생성 흐름도는 첫 줄이 `.. gen_arch:` 주석인 `[TEXT]` 노드다. 직접 편집하지 않는다 — 다시
+생성하면 그 노드만 지우고 새로 넣는다. `python tools/gen_arch.py --check` 가 "ICD는
+바뀌었는데 흐름도는 안 바뀐" 상태를 잡는다 (CI에서는 경고).
 
 **도면 원본은 `docs/_assets/KIST_DRL_G1_Arch.drawio`** (2페이지 — `C4_Context_Option1` · **`C4_Container_Option1`** = 현행 컨테이너 도면).
 draw.io에서 *Open from → GitHub* 로 이 파일을 직접 열어 편집·저장한다.
@@ -160,7 +160,7 @@ CI(Pages)도 같은 방식으로 `_src/` 를 받아 **소스 포함(internal)** 
 
 **정책**
 - **빌드 실패**: 문법(.sgra) 위반, 끊어진 UID 참조, 없는 File 경로 — `strictdoc export` 자체가 검증기다.
-- **경고**: 아키텍처 도면 최신성(`gen_arch.py --check`), PDF 생성 실패, 미구현·미검증 요구사항.
+- **경고**: ICD 섹션 흐름도 최신성(`gen_arch.py --check`), PDF 생성 실패, 미구현·미검증 요구사항.
 
 **마일스톤 릴리스 절차**
 

@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""ICD 문서에서 아키텍처 다이어그램(Mermaid)을 생성한다.
+"""ICD 문서의 각 섹션 머리에 경로 흐름도(Mermaid)를 생성해 넣는다.
 
 `docs/20_icd.sdoc` 의 각 [ICD] 노드는 이미 다음을 갖고 있다.
 
     SOURCE  → TARGET      : 화살표의 양 끝
-    TOPIC / MSG_TYPE      : 상세표의 엔드포인트
     COMM_TYPE             : 선 모양 (DDS 실선 / 그 외 점선)
 
 즉 ICD 데이터베이스 자체가 아키텍처 그래프이므로, 다이어그램을 따로 그릴 필요 없이
 여기서 생성한다. 손으로 그린 도면과 ICD가 어긋날 여지가 사라진다.
 
-다이어그램은 ICD 문서의 **섹션 단위로 쪼개서** 생성한다. 전체를 한 장에 그리면
-그래프 자연폭이 1500px를 넘어 문서 칼럼(보통 600~1000px)에서 심하게 축소되어
-글씨를 읽을 수 없기 때문이다. 경로별로 나누면 각 그림이 원본 크기로 렌더링된다.
+다이어그램은 ICD 문서의 **섹션 단위로 쪼개서**, 그 섹션의 머리(섹션 소개 바로 뒤)에
+[TEXT] 노드로 넣는다. 전체를 한 장에 그리면 그래프 자연폭이 1500px를 넘어 문서
+칼럼에서 글씨를 읽을 수 없기 때문이다. 생성 노드는 첫 줄의 ``MARKER`` 로 알아보며,
+다시 실행하면 그 노드만 지우고 새로 넣는다. 사람이 쓴 부분은 건드리지 않는다.
 
 사용법:
 
-    python tools/gen_arch.py            # docs/40_architecture.sdoc 갱신
+    python tools/gen_arch.py            # docs/20_icd.sdoc 의 섹션 흐름도 갱신
     python tools/gen_arch.py --check    # 갱신 필요 여부만 확인 (CI용, 종료코드 1)
 """
 
@@ -36,7 +36,9 @@ for _stream in (sys.stdout, sys.stderr):
 
 ROOT = Path(__file__).resolve().parent.parent
 ICD_DOC = ROOT / "docs" / "20_icd.sdoc"
-ARCH_DOC = ROOT / "docs" / "40_architecture.sdoc"
+
+# 생성한 흐름도 [TEXT] 노드의 첫 줄. RST 주석이라 화면에는 보이지 않는다.
+MARKER = ".. gen_arch: 아래 흐름도는 tools/gen_arch.py 가 이 섹션의 ICD 노드에서 생성한다. 직접 편집하지 말 것."
 
 # 컨테이너를 배치 구역으로 묶는다. PDF의 C4 Container 다이어그램과 동일한 구획이다.
 # 여기가 이 스크립트에서 유일하게 사람이 관리하는 정보이다.
@@ -252,28 +254,6 @@ def mermaid_block(interfaces: list[Interface]) -> str:
     )
 
 
-def detail_table(interfaces: list[Interface]) -> str:
-    rows: list[str] = []
-    for itf in interfaces:
-        endpoint = itf.topic or itf.msg_type or "—"
-        rows.append(f"   * - {itf.uid}")
-        rows.append(f"     - {itf.source}")
-        rows.append(f"     - {itf.target}")
-        rows.append(f"     - ``{endpoint}``")
-    body = "\n".join(rows)
-    return (
-        ".. list-table::\n"
-        "   :widths: 10 22 22 46\n"
-        "   :header-rows: 1\n"
-        "\n"
-        "   * - ID\n"
-        "     - 송신\n"
-        "     - 수신\n"
-        "     - 토픽 / 엔드포인트\n"
-        f"{body}\n"
-    )
-
-
 def group_by_section(interfaces: list[Interface]) -> list[tuple[str, list[Interface]]]:
     """ICD 문서에 나타난 순서를 유지하며 섹션별로 묶는다."""
     order: list[str] = []
@@ -286,80 +266,72 @@ def group_by_section(interfaces: list[Interface]) -> list[tuple[str, list[Interf
     return [(name, buckets[name]) for name in order]
 
 
-def render_document(interfaces: list[Interface]) -> str:
-    parts: list[str] = [
-        f"""[DOCUMENT]
-TITLE: KIST DRL G1 아키텍처
-UID: DOC-ARCH
-VERSION: 0.1
-DATE: 2026-09-05
-CLASSIFICATION: Internal
-OPTIONS:
-  MARKUP: RST
-  AUTO_LEVELS: On
+def generated_text_node(group: list[Interface]) -> list[str]:
+    """섹션 머리에 넣을 흐름도 [TEXT] 노드 (줄 목록, 앞 빈 줄 포함)."""
+    return ["", "[TEXT]", "STATEMENT: >>>", MARKER, "", *mermaid_block(group).splitlines(), "<<<"]
 
-[TEXT]
-STATEMENT: >>>
-.. warning::
 
-   본 문서는 ``tools/gen_arch.py`` 가 ``docs/20_icd.sdoc`` 에서 **자동 생성** 한다.
-   직접 편집하지 말 것. 편집해도 다음 생성 시 덮어써진다.
+def strip_generated(lines: list[str]) -> list[str]:
+    """이전에 생성한 흐름도 [TEXT] 노드를 앞의 빈 줄과 함께 모두 걷어낸다."""
+    out: list[str] = []
+    i = 0
+    while i < len(lines):
+        if (
+            lines[i] == "[TEXT]"
+            and i + 2 < len(lines)
+            and lines[i + 1] == "STATEMENT: >>>"
+            and lines[i + 2] == MARKER
+        ):
+            if out and out[-1] == "":
+                out.pop()
+            i += 3
+            while i < len(lines) and lines[i] != "<<<":
+                i += 1
+            i += 1
+            continue
+        out.append(lines[i])
+        i += 1
+    return out
 
-본 문서는 시스템의 컨테이너 구성과 컨테이너 간 데이터 흐름을 정의한다.
-아래 다이어그램은 손으로 그린 것이 아니라 인터페이스 정의서(ICD)에서 생성된다.
-각 ``[ICD]`` 노드의 ``송신 컨테이너`` / ``수신 컨테이너`` 가 화살표의 양 끝이고,
-``통신 방식`` 이 선 모양이 된다.
 
-.. code-block:: text
+def render_icd(text: str, interfaces: list[Interface]) -> str:
+    """ICD 문서의 각 섹션 머리(섹션 소개 [TEXT] 바로 뒤)에 흐름도를 넣은 전문을 만든다.
 
-   python tools/gen_arch.py
-
-ICD를 수정한 뒤 위 명령을 다시 실행하면 다이어그램이 갱신된다.
-CI에서 ``python tools/gen_arch.py --check`` 를 돌리면
-"ICD는 바뀌었는데 다이어그램은 안 바뀐" 상태를 빌드 실패로 잡을 수 있다.
-
-현재 인터페이스 {len(interfaces)}건.
-<<<"""
-    ]
-
-    parts.append(
-        """[[SECTION]]
-TITLE: 읽는 법
-
-[TEXT]
-STATEMENT: >>>
-다이어그램은 ICD 문서의 섹션(데이터 경로) 단위로 나누어 그린다.
-전체를 한 장에 그리면 문서 폭에서 글씨를 읽을 수 없기 때문이다.
-
-**선 모양**
-
-- 실선 — DDS 토픽
-- 점선 — DDS 외 통신 (HTTPS · gRPC · WebSocket)
-
-**구현 상태** 는 도면에 표시하지 않는다. 각 인터페이스가 구현 파일에 연결되었는지는
-**Source coverage** 화면과 각 ICD 노드의 ``File`` 관계에서 확인한다.
-
-화살표 라벨은 ICD 번호이며, 토픽 상세는 각 그림 아래 표에 있다.
-<<<
-
-[[/SECTION]]"""
-    )
-
-    for section_name, group in group_by_section(interfaces):
-        parts.append(
-            f"""[[SECTION]]
-TITLE: {section_name}
-
-[TEXT]
-STATEMENT: >>>
-{mermaid_block(group)}
-{detail_table(group)}
-<<<
-
-[[/SECTION]]"""
-        )
-
-    return "\n\n".join(parts) + "\n"
+    섹션 소개 [TEXT] 가 없으면 TITLE 바로 뒤에 넣는다. 사람이 쓴 부분은 건드리지 않는다.
+    """
+    groups = dict(group_by_section(interfaces))
+    lines = strip_generated(text.splitlines())
+    out: list[str] = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        out.append(line)
+        i += 1
+        if not line.startswith("[[SECTION]]"):
+            continue
+        # TITLE 줄까지 복사
+        while i < len(lines) and not lines[i].startswith("TITLE: "):
+            out.append(lines[i])
+            i += 1
+        if i >= len(lines):
+            break
+        title = lines[i][len("TITLE: "):].strip()
+        out.append(lines[i])
+        i += 1
+        if title not in groups:
+            continue
+        # 섹션 소개 [TEXT] 가 바로 뒤따르면 그 끝(<<<)까지 복사
+        j = i
+        while j < len(lines) and lines[j] == "":
+            j += 1
+        if j < len(lines) and lines[j] == "[TEXT]":
+            while i < len(lines) and lines[i] != "<<<":
+                out.append(lines[i])
+                i += 1
+            out.append(lines[i])
+            i += 1
+        out.extend(generated_text_node(groups[title]))
+    return "\n".join(out) + "\n"
 
 
 def main() -> int:
@@ -376,26 +348,26 @@ def main() -> int:
         print(f"error: {ICD_DOC} 에서 [ICD] 노드를 찾지 못했습니다.", file=sys.stderr)
         return 2
 
-    rendered = render_document(interfaces)
-    existing = ARCH_DOC.read_text(encoding="utf-8") if ARCH_DOC.exists() else None
+    existing = ICD_DOC.read_text(encoding="utf-8")
+    rendered = render_icd(existing, interfaces)
     sections = len(group_by_section(interfaces))
 
     if args.check:
         if existing != rendered:
             print(
-                f"error: {ARCH_DOC.name} 이(가) ICD와 어긋납니다. "
+                f"error: {ICD_DOC.name} 의 흐름도가 ICD 노드와 어긋납니다. "
                 "`python tools/gen_arch.py` 를 실행하세요.",
                 file=sys.stderr,
             )
             return 1
         print(
-            f"ok: {ARCH_DOC.name} 은(는) ICD와 일치합니다 (인터페이스 {len(interfaces)}건)."
+            f"ok: {ICD_DOC.name} 의 흐름도가 ICD 노드와 일치합니다 (인터페이스 {len(interfaces)}건)."
         )
         return 0
 
-    ARCH_DOC.write_text(rendered, encoding="utf-8", newline="\n")
+    ICD_DOC.write_text(rendered, encoding="utf-8", newline="\n")
     print(
-        f"generated: {ARCH_DOC.relative_to(ROOT)} "
+        f"generated: {ICD_DOC.relative_to(ROOT)} 섹션 흐름도 "
         f"(인터페이스 {len(interfaces)}건 / 다이어그램 {sections}장)"
     )
     return 0
