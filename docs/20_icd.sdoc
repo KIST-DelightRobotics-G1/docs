@@ -53,10 +53,10 @@ STATEMENT: >>>
       flowchart TB
         subgraph onboard["Unitree G1 (NX) — Onboard"]
           n_ext_sensor_io["ext-sensor-io"]
-          n_speaker_node["speaker_node"]
         end
         subgraph workstation["PC (RTX 4090) — Workstation"]
           n_stt_node["stt_node"]
+          n_speaker_node["speaker_node"]
           n_orchestrator_node["orchestrator_node"]
         end
         subgraph external["External"]
@@ -216,9 +216,9 @@ STATEMENT: >>>
       flowchart TB
         subgraph onboard["Unitree G1 (NX) — Onboard"]
           n_G1["G1"]
-          n_speaker_node["speaker_node"]
         end
         subgraph workstation["PC (RTX 4090) — Workstation"]
+          n_speaker_node["speaker_node"]
           n_orchestrator_node["orchestrator_node"]
           n_tts_node["tts_node"]
         end
@@ -778,6 +778,8 @@ COMMENT: >>>
 
 이전에는 ``Header`` 를 쓰고 사유 필드를 ``note`` 로 불렀다. cortex · vla 와 맞추어
 ``stamp_ns`` · ``detail`` 로 통일했다 (navigation-planner ``0a31cf9``).
+
+DONE · FAILED 3회 발행 뒤 IDLE 복귀를 구현했다 (navigation-planner ``12da99d``) — 규약 1 · 2 절과 일치.
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -1200,7 +1202,8 @@ PyAV 로 디코드한다. gui_bridge 는 최신 프레임만 JPEG 로 (≤ 15 Hz
 PRECONDITION: ext-sensor tx(카메라) 활성
 COMMENT: >>>
 TARGET 은 대표 소비처(detector_node)만 표기. 실제 소비처는 File 관계 참조.
-navigation-planner 의 세그멘테이션 소비부는 LIO 재구성 때 _parked/ 로 보류되었다.
+navigation-planner 의 세그멘테이션 소비부는 LIO 재구성 때 ``_parked/`` 로 보류되었다가
+레포에서 삭제되었다 (navigation-planner ``b44f6d7``).
 
 2026-09-28: 타입 이름을 ``kist_msgs::CompressedColorFrame`` 에서 ROS 2 형식으로 바꿨다
 (ext-sensor-io ``48c6ca9`` #3 · vla-inference ``e6c4af8`` #3 · cortex ``728a492`` #23, 같이 머지).
@@ -1517,9 +1520,9 @@ RVL 무손실 Z16 + ``depth_scale`` + 카메라 intrinsics(``fx`` / ``fy`` / ``c
 <<<
 PRECONDITION: ext-sensor tx 활성
 COMMENT: >>>
-⚠ **수신측 보류.** navigation-planner 의 ``labeled_cloud`` 소비부가 LIO 재구성 때
-``_parked/labeled_cloud/`` 로 옮겨졌고, 지금 이 depth 프레임을 읽는 곳이 시스템에 없다.
-ext-sensor-io 는 계속 발행한다.
+⚠ **수신측 없음.** navigation-planner 의 ``labeled_cloud`` 소비부가 LIO 재구성 때
+``_parked/labeled_cloud/`` 로 옮겨졌다가 레포에서 삭제되었다 (navigation-planner ``b44f6d7``).
+지금 이 depth 프레임을 읽는 곳이 시스템에 없다. ext-sensor-io 는 계속 발행한다.
 
 발행측이 살아 있어 노드는 남겨 두었다. navigation-planner 가 세그멘테이션을 되살릴 계획이
 없다면 발행 자체를 끄는 것이 대역폭에 낫다 — nav 담당자 확인이 필요하다.
@@ -1590,9 +1593,12 @@ CRC32 검증.
 <<<
 PRECONDITION: G1 전원 · DDS 활성
 COMMENT: >>>
-소비처 4곳 — gearsonic(제어) · gearsonic ``MotorHealthMonitor`` (fault word · 케이싱/권선 온도 · 토크 정합 감시,
+소비처 5곳 — gearsonic(제어) · gearsonic ``MotorHealthMonitor`` (fault word · 케이싱/권선 온도 · 토크 정합 감시,
 **로그 전용, E-STOP 발효 없음**; gearsonic ``b899bb7`` ``975c3d5``) · vla-inference(정책 관측, 직접 구독) ·
-safety-controller(로봇 생존 감시).
+safety-controller(로봇 생존 감시) · navigation-planner(LIO 자세에 허리 관절을 합성해 ``T_odom_pelvis`` 계산).
+
+navigation-planner 는 PC 에서 돌므로 DDS 인터페이스가 로봇 LAN NIC 여야 이 토픽을 받는다.
+레포 기본값이 ``lo`` 로 바뀌었다 (navigation-planner ``6299e60``, 같은 PC 시험용) — 실기 배포 때 바꿔야 한다.
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -1612,6 +1618,8 @@ RELATIONS:
   VALUE: _src/vla-inference/src/vla/io/unitree/unitree_state_reader.py
 - TYPE: File
   VALUE: _src/safety-controller/src/safety/robot_state_monitor.cpp
+- TYPE: File
+  VALUE: _src/navigation-planner/src/unitree/unitree_state_reader.cpp
 
 [ICD]
 UID: ICD-41
