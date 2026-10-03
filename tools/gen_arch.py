@@ -46,13 +46,14 @@ ZONES: list[tuple[str, str, list[str]]] = [
     (
         "onboard",
         "Unitree G1 (NX) — Onboard",
-        ["G1", "ext-sensor-io", "speaker_node"],
+        ["G1", "ext-sensor-io"],
     ),
     (
         "workstation",
         "PC (RTX 4090) — Workstation",
         [
             "stt_node",
+            "speaker_node",  # cortex 컨테이너 — 로봇 스피커는 G1 음성 서비스(DDS RPC)로 원격 재생
             "orchestrator_node",
             "llm_node",
             "detector_node",
