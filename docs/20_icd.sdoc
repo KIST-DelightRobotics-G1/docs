@@ -850,6 +850,8 @@ RELATIONS:
   VALUE: _src/vla-inference/src/vla/cortex/bridge.py
 - TYPE: File
   VALUE: _src/vla-inference/src/vla/cortex/subtask_machine.py
+- TYPE: File
+  VALUE: _src/vla-inference/src/vla/progress_probe/probe_bank.py
 
 [ICD]
 UID: ICD-76
@@ -993,15 +995,22 @@ STATEMENT: >>>
 요청 ``target`` (+ ``min_confidence`` · ``max_age_s``, 0 이면 검출기 기본값) /
 응답 ``found`` · ``confidence`` · ``label`` · bbox (``cx`` ``cy`` ``w`` ``h``, 0~1 정규화)
 · ``stamp`` · ``detail`` (``""`` · ``stale`` · ``no_frame`` · ``unknown_target`` ·
-``model_not_loaded``).
+``model_not_loaded`` · ``stub``).
 
 새로 추론하지 않고 최근 0.6초 창에서 답하므로 수 ms 안에 돌아온다. 한 프레임의 깜빡임으로
 판정이 뒤집히지 않는다.
 <<<
 PRECONDITION: detector_node 기동
 COMMENT: >>>
-현재 ``backend: always`` 스텁이라 모든 target 을 보인다고 답한다. YOLO 전환은 파라미터
-한 줄(``backend: yolo``)이며, 오이는 COCO 에 없어 시연 환경 데이터로 파인튜닝이 필요하다.
+현재 ``backend: always`` 스텁이라 모든 target 을 보인다고 답한다 (``detail`` ``stub``, 카메라도 받지 않는다).
+YOLO 백엔드 코드는 있지만 실제로 켜려면 셋이 더 필요하다:
+
+- **실행 환경** — cortex 도커 이미지에 ultralytics · torch · GPU 가 없어 ``backend: yolo`` 로 바꿔도
+  ``model_not_loaded`` 로 답한다 (fail-open 으로 진행).
+- **가중치** — 오이는 COCO 에 없어 시연 환경 데이터로 파인튜닝한 가중치가 필요하다.
+- **설정** — ``backend: yolo`` · ``model`` 경로 · 대상 키 → 클래스 매핑(``target_keys`` / ``target_classes``).
+
+YOLO 연동 PR 이 진행 중이다 (cortex #29, 2026-10-04 미머지). 머지되면 이 노드를 다시 고친다.
 
 **"안 보임" 일 때만 계획을 중단한다.** 검출기가 없거나 프레임이 없어 판정 자체가 불가능한
 경우는 fail-open 으로 진행한다 — 판정기가 죽어서 로봇이 멈추는 쪽이 더 나쁘다.
@@ -1032,7 +1041,9 @@ STATEMENT: >>>
 <<<
 PRECONDITION: GOOGLE_API_KEY 환경변수
 COMMENT: >>>
-첫 줄 도착 5초 · 전체 15초 타임아웃이고, 실패하면 1회 재시도한다. **재시도는 아직 아무
+백엔드는 ``dummy`` 가 기본이고 실행할 때 고른다 (예 ``llm_demo.launch.py backend:=gemini``).
+첫 줄 도착 5초 · 전체 20초 타임아웃이고 (코드 기본값 15초를 ``cortex_params.yaml`` 이 20초로 덮어쓴다),
+실패하면 1회 재시도한다. **재시도는 아직 아무
 줄도 내보내지 않은 경우에만 안전하다** — 이미 내보낸 뒤면 계획이 섞인다.
 
 측정에서 응답이 오지 않는 요청 하나에 73분 매달린 적이 있어 넣은 장치다. 실측 첫 줄
@@ -1120,7 +1131,7 @@ COMM_TYPE: DDS Topic
 SOURCE: nav-planner
 TARGET: gearsonic
 TOPIC: rt/kist/nav/cmd_vel
-MSG_TYPE: geometry_msgs/Twist
+MSG_TYPE: geometry_msgs::msg::dds_::Twist_
 QOS: N/A
 FREQUENCY: ~20 Hz (계획 주기)
 STATEMENT: >>>
@@ -1130,14 +1141,19 @@ gearsonic의 ``NavCmdReceiver`` 가 수신해 ``InputHandler::nav_buf`` 에 넣�
 <<<
 PRECONDITION: gearsonic 실행 + 스틱 중립 + E-STOP 미발효
 COMMENT: >>>
-**발행측 미구현** — navigation-planner 에 ``rt/kist/nav/cmd_vel`` 발행 코드가 아직 없다 (gearsonic 수신부만 선행,
-gearsonic ``0c5f8d3``). QoS는 발행측이 정한다. 이 인터페이스가 생기면서 nav-planner → gearsonic 경로는
-in-process 라이브러리 호출이 아니라 DDS 토픽이 된다.
+양측 구현 완료. navigation-planner 의 ``NavCommandPublisher`` 가 Unitree ``ChannelPublisher`` 로
+``geometry_msgs::msg::dds_::Twist_`` 를 발행하고 (``linear.z`` · ``angular.x/y`` 는 0), 종료할 때 0 속도를
+한 번 보내 멈춘다. gearsonic 수신부는 ``0c5f8d3`` 에서 먼저 들어왔다. QoS 는 ``ChannelPublisher`` 기본값이다.
+이 인터페이스로 nav-planner → gearsonic 경로는 in-process 라이브러리 호출이 아니라 DDS 토픽이다.
 <<<
 RELATIONS:
 - TYPE: Parent
   VALUE: SYS-REQ-45
   ROLE: Implements
+- TYPE: File
+  VALUE: _src/navigation-planner/src/controller/nav_command_publisher.cpp
+- TYPE: File
+  VALUE: _src/navigation-planner/include/controller/nav_command_publisher.hpp
 - TYPE: File
   VALUE: _src/gearsonic-inference/src/motion/nav_cmd_receiver.cpp
 - TYPE: File
