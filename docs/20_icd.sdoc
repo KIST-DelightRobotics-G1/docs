@@ -519,14 +519,18 @@ status 만으로** 완료·실패를 판정한다. 완료 기준(nav 도착 반�
      - 다른 id 의 cancel
      - RUNNING
      - 무시
-   * - RUNNING · DONE · FAILED
+   * - RUNNING
      - Cmd 수신 (같은 id 재전송 포함)
-     - (그대로)
+     - RUNNING
      - 무시. 오케스트레이터는 IDLE 인 모듈에만 Cmd 를 보낸다 (3 절) — **Cmd 로 하는 선점은 없다**
    * - DONE · FAILED
      - 3회(0.3 s) 발행 완료
      - IDLE
      -
+   * - DONE · FAILED
+     - 3회 중 Cmd 수신
+     - 모듈 재량
+     - 받아서 시작하거나 무시한다 (vla-inference 는 받는다). 오케스트레이터는 IDLE 뒤에만 보내므로 생기지 않는다
 
 **2. 발행 규칙** (모듈)
 
@@ -654,42 +658,40 @@ Cmd 로 하는 선점이 없으므로 **cancel 이 멈추는 유일한 경로다
 
 **7. VLA instruction 어휘**
 
-VLA 정책은 학습 때 쓴 문장을 조건으로 동작하므로, 오케스트레이터가 보내는 ``instruction`` 은
-**VLA 학습 문장과 글자까지 같아야 한다.** 문장의 주인은 VLA 이고, 오케스트레이터는 이 표대로
-보낸다 (``config/actions.yaml`` · ``config/plan_rewrites.yaml`` · ``capabilities.yaml`` 의 영어 이름표).
-학습 문장 칸은 VLA 담당이 채우며, 두 칸이 다르면 오케스트레이터 쪽을 고친다.
+vla-inference 의 진행도 헤드는 ``probes.json`` (학습 문장 → 헤드 파일) 에서 받은 ``instruction`` 과
+**글자까지 같은 키** 의 헤드만 고른다. 다르면 진행도 판정이 없어 DONE 이 오지 않고 단계 타임아웃으로
+끝난다. 그래서 VLA 단계의 ``instruction`` 은 **VLA 학습 문장과 글자까지 같아야 한다.**
+
+- **문장의 원본은 cortex** ``src/cortex_cognition/config/vla_prompts.yaml`` 이다. 키는 ``동작(인자)``
+  (예 ``open(fridge_door)``), 값은 ``probes.json`` 의 키 문장 그대로다. **VLA 담당이 채운다.**
+- 오케스트레이터는 이 표를 먼저 찾고, 없거나 비어 있으면 ``config/actions.yaml`` · ``plan_rewrites.yaml``
+  의 템플릿 문장을 보내며 경고를 남긴다 (기동 로그 ``NOT FILLED`` 목록, VLA 전송마다 경고).
+- 학습 문장을 바꾸면 이 파일도 같이 고친다.
 
 .. list-table::
-   :widths: 30 35 35
+   :widths: 34 66
    :header-rows: 1
 
-   * - action (args)
-     - 현재 오케스트레이터 문장
-     - VLA 학습 문장
-   * - ``open`` (fridge_door)
+   * - 키 (시연 동작)
+     - 표가 비어 있을 때 보내는 템플릿 문장
+   * - ``open(fridge_door)``
      - Open the refrigerator door.
-     - (미정)
-   * - ``approach`` (fridge) — 시연 보정 삽입
+   * - ``approach(fridge)`` — 시연 보정 삽입
      - Approach the refrigerator.
-     - (미정)
-   * - ``pick`` (cucumber)
+   * - ``pick(cucumber)``
      - Pick up the cucumber.
-     - (미정)
-   * - ``take_out`` (cucumber, fridge)
+   * - ``take_out(cucumber,fridge)``
      - Take the cucumber out of the refrigerator.
-     - (미정)
-   * - ``step_back`` (fridge) — 시연 보정 삽입
+   * - ``step_back(fridge)`` — 시연 보정 삽입
      - Step back from the refrigerator.
-     - (미정)
-   * - ``close`` (fridge_door)
+   * - ``close(fridge_door)``
      - Close the refrigerator door.
-     - (미정)
-   * - ``place`` (cucumber, table)
+   * - ``place(cucumber,table)``
      - Place the cucumber on the table.
-     - (미정)
-   * - ``handover`` (cucumber, user)
+   * - ``handover(cucumber,user)``
      - Hand the cucumber to the person.
-     - (미정)
+
+2026-10-04 현재 표는 비어 있다 (cortex #28) — VLA 팀에 ``probes.json`` 키 문장 기입을 요청했다.
 <<<
 
 [ICD]
@@ -807,8 +809,8 @@ QOS: Reliable
 FREQUENCY: 이벤트 (subtask 1건마다 1회)
 STATEMENT: >>>
 ICD-70 과 같은 타입이다. VLA 는 ``move_to`` 를 제외한 19개 action 을 처리하며,
-``instruction`` 에 영어 지시문이 함께 온다 (예 ``Hand the cucumber to the person.``).
-지시문은 오케스트레이터가 ``config/actions.yaml`` 의 템플릿으로 만든다.
+``instruction`` 에 영어 지시문이 함께 온다. 지시문은 ``config/vla_prompts.yaml`` 의 VLA 학습 문장을
+먼저 쓰고, 없으면 ``config/actions.yaml`` 의 템플릿으로 만든다 (예 ``Hand the cucumber to the person.``).
 
 시연 보정으로 LLM 계획에 없는 두 동작이 끼어 나갈 수 있다 (``config/plan_rewrites.yaml``, cortex #21):
 ``open(fridge_door)`` 과 ``pick`` 사이의 ``approach`` (``Approach the refrigerator.``),
@@ -839,6 +841,10 @@ RELATIONS:
 - TYPE: File
   VALUE: _src/cortex/src/cortex_msgs/msg/SubtaskCmd.msg
 - TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/config/vla_prompts.yaml
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/planner.py
+- TYPE: File
   VALUE: _src/vla-inference/idl/cortex_subtask.idl
 - TYPE: File
   VALUE: _src/vla-inference/src/vla/cortex/bridge.py
@@ -867,17 +873,16 @@ COMMENT: >>>
 양측 구현 완료 (2026-09-26). VLA 의 ``progress`` 는 추정값이라 판정에 쓰지 않는다 —
 성공 여부는 ``status`` 만으로 판단한다.
 
-**vla-inference main 은 아직 규약과 다르게 동작한다** (2026-10-03 기준):
+2026-10-04 진행도 판정이 vla-inference main 에 들어왔다 (#5):
 
-- ``DONE`` 을 보내지 않는다. 완료 판정(진행도 추정기)이 없어 subtask 는 취소·타임아웃
-  까지 ``RUNNING`` 이다. 그래서 오케스트레이터의 단계 타임아웃(30 s) 에서 취소 → ``IDLE``
-  로 끝나고, 다음 단계로 넘어가지 못한다.
-- ``FAILED`` 를 3회 뒤 ``IDLE`` 로 돌리지 않고 다음 유효 명령까지 유지한다.
-
-두 가지 모두 브랜치 ``vla-inference-probe-viewer`` (미머지) 에서 구현 중이다 — 진행도 0.70
-이상이면 DONE, 낮은 값에서 정체하면 FAILED ``stalled at N.NN``, 둘 다 3회 뒤 IDLE. 이 브랜치는
-``instruction`` 과 같은 문장으로 학습된 진행도 모델만 쓰므로, 문장이 다르면 DONE 이 나오지 않는다
-(규약 7 절).
+- **DONE**: 진행도 ≥ 0.70 이면 바로 DONE (``detail`` ``done (progress N.NN)``).
+- **FAILED**: 시작 10 s 뒤부터 진행도 < 0.55 · 기울기 < 0.027/s 가 3 s 이어지면
+  ``stalled at N.NN``. 임계값은 ``run_vla.py`` 플래그.
+- DONE · FAILED 3회 뒤 IDLE, ``progress`` 필드에 진행도를 채운다. RUNNING 중 Cmd 는 무시한다
+  (규약 1 절과 일치).
+- 진행도 헤드는 ``instruction`` 과 글자까지 같은 학습 문장의 것만 쓰인다 — 문장이 다르면 DONE 이
+  없고 단계 타임아웃(30 s)으로 끝난다 (규약 7 절, ``vla_prompts.yaml`` 미기입 상태).
+- 가장 이른 정체 판정이 13 s 뒤라, 동작이 길면 오케스트레이터 단계 타임아웃(30 s)을 실측 후 늘려야 할 수 있다.
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -888,6 +893,10 @@ RELATIONS:
   ROLE: Implements
 - TYPE: File
   VALUE: _src/vla-inference/src/vla/cortex/bridge.py
+- TYPE: File
+  VALUE: _src/vla-inference/src/vla/cortex/subtask_machine.py
+- TYPE: File
+  VALUE: _src/vla-inference/src/vla/progress_probe/progress_state.py
 - TYPE: File
   VALUE: _src/vla-inference/src/common/cyclonedds/cortex_msgs.py
 - TYPE: File
