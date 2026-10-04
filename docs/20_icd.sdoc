@@ -549,6 +549,7 @@ status 만으로** 완료·실패를 판정한다. 완료 기준(nav 도착 반�
   넘어가는 단계 포함)에 적용한다. IDLE 이 아니면 보내지 않고 IDLE 을 기다린다. 그 모듈이
   버려진 이전 단계로 아직 RUNNING 이면 보고된 id 로 cancel 을 보낸다. ``safe_stop_timeout_s``
   안에 IDLE 이 없으면 아무것도 보내지 않고 계획을 중단하며 사용자에게 알린다.
+  IDLE 을 확인한 뒤 Cmd 를 보내기 전에 대상 확인(``RULE-PRECHECK``)을 거친다.
 - **단계가 끝나면 DONE 이 아니라 IDLE 을 기다린다.** 같은 id 의 DONE 을 받으면 그 단계를
   완료로 기록하고, 그 모듈이 IDLE 을 보낼 때 다음 Cmd 를 보낸다. ``idle_wait_s`` 안에 IDLE 이
   없으면 계획을 중단한다. nav 와 VLA 는 둘 다 gearsonic 으로 몸을 움직이므로 "도착"(DONE) 이
@@ -692,6 +693,105 @@ vla-inference 의 진행도 헤드는 ``probes.json`` (학습 문장 → 헤드 
      - Hand the cucumber to the person.
 
 2026-10-04 현재 표는 비어 있다 (cortex #28) — VLA 팀에 ``probes.json`` 키 문장 기입을 요청했다.
+<<<
+
+[TEXT]
+UID: RULE-PRECHECK
+STATEMENT: >>>
+**사전 확인 규약** — orchestrator_node 와 detector_node 가 ICD-79 로 지키는 판정 규칙이다 (cortex #29).
+조작 Cmd 를 보내기 전에 대상이 카메라에 보이는지 확인해, 대상이 없는데 VLA 가 움직이는 일을 막는다.
+
+**1. 언제 무엇을 묻나**
+
+대상 모듈이 IDLE 이 된 뒤(``RULE-SUBTASK`` 3 절), Cmd 를 보내기 직전에 ``config/actions.yaml`` 의
+``precheck`` 표대로 묻는다. 값이 목록이면 **모두 보여야** 한다 (AND). 표에 없는 동작
+(``move_to`` · ``place`` · ``approach`` · ``step_back`` 등)은 묻지 않는다.
+
+.. list-table::
+   :widths: 45 55
+   :header-rows: 1
+
+   * - 시연 동작
+     - 확인 대상
+   * - ``open(fridge_door)`` · ``close(fridge_door)``
+     - ``fridge_door``
+   * - ``take_out(cucumber,fridge)``
+     - ``fridge`` **그리고** ``cucumber``
+   * - ``pick(cucumber)``
+     - ``cucumber`` (냉장고는 확인하지 않는다)
+   * - ``handover(cucumber,user)``
+     - ``user``
+
+**2. detector 판정**
+
+새로 추론하지 않고 최근 ``window_s`` (0.6 s) 창에서 답한다. 서로 다른 원본 프레임이 ``min_frames``
+(3) 장 이상 있어야 하고, 신뢰도가 기준 이상인 프레임이 **과반**이며, ``require_latest_hit`` 이면 가장
+최근 프레임에서도 검출되어야 "보임" 이다. 프레임 나이는 영상 원본 시각으로 재므로 송 · 수신 PC 의
+시계가 맞아야 하고, 오래되었거나 미래 시각인 프레임은 버린다.
+
+**3. 결과별 오케스트레이터 동작**
+
+.. list-table::
+   :widths: 34 14 24 28
+   :header-rows: 1
+
+   * - ``found`` / ``detail``
+     - 의미
+     - fail-open (데모)
+     - fail-closed (실기)
+   * - true (``""`` · ``stub``)
+     - 보임
+     - 진행
+     - 진행
+   * - false, ``""``
+     - 안 보임
+     - 중단 · "~가 보이지 않습니다"
+     - ``precheck_timeout_s`` 동안 재확인 → 중단
+   * - false, ``no_frame`` · ``stale`` · ``insufficient_frames`` · ``model_not_loaded`` ·
+       ``inference_error`` · ``no_detector`` · ``detector_timeout`` · ``detector_error``
+     - 판정 불가
+     - 진행
+     - 재확인 → 중단 · "~의 존재를 확인할 수 없어 작업을 중단합니다"
+   * - false, ``unknown_target`` · ``unsupported_class`` · ``invalid_request``
+     - 설정 오류
+     - 진행
+     - 재확인 없이 즉시 중단
+
+재확인할 때마다 모든 대상을 다시 묻는다 — 앞서 한 대상만 보였던 결과를 이어 붙이지 않는다.
+사전 확인 중에 "그만" 이 오면 Cmd 를 보내기 전이므로 cancel 없이 바로 멈춘다.
+
+**4. 프로필**
+
+.. list-table::
+   :widths: 30 32 38
+   :header-rows: 1
+
+   * -
+     - 데모 (``llm_demo.launch.py``)
+     - 실기 (``cortex.launch.py`` · ``cortex_params.yaml``)
+   * - detector
+     - ``always`` 스텁 (가중치 불필요)
+     - ``yolo`` · ``/models/cortex/yolo26s_fridge_cucumber_continued.pt`` (SHA-256 고정, 없으면 기동 실패)
+   * - 신뢰도 기준
+     - —
+     - 0.25
+   * - ``detector_fail_open``
+     - true
+     - false
+   * - ``precheck_timeout_s`` / ``precheck_retry_s``
+     - 0 (한 번만)
+     - 1.0 s / 0.1 s
+
+cortex 도커 이미지에 CUDA PyTorch · ultralytics 가 들어 있다. 실기는 ``docker/run.sh`` 가 GPU 를
+열고 호스트 ``~/models/cortex`` 를 ``/models/cortex`` 로 읽기 전용 마운트한다 (``CORTEX_GPUS`` ·
+``CORTEX_MODEL_DIR``). 자세한 것은 cortex ``docs/yolo_deployment.md``.
+
+**5. 한계**
+
+- ``fridge_door`` 는 ``refrigerator`` 클래스의 **존재** 만 본다. 문이 열렸는지, 닿을 수 있는지는 판정하지 않는다.
+- 2 클래스 가중치(냉장고 · 오이)에는 ``person`` 이 없어 ``user`` 는 ``unsupported_class`` 다 —
+  실기 프로필에서 **handover 는 막힌다.**
+- 실행 후 확인(문 열림 · 그리퍼의 오이)은 없다.
 <<<
 
 [ICD]
@@ -990,30 +1090,27 @@ TARGET: detector_node
 TOPIC: /cortex/detector/check
 MSG_TYPE: cortex_msgs/CheckTarget
 QOS: Reliable
-FREQUENCY: 이벤트 (조작 subtask 직전 1회)
+FREQUENCY: 이벤트 (조작 subtask 직전, 대상마다 1회 · 재확인 시 0.1 s 간격)
 STATEMENT: >>>
-요청 ``target`` (+ ``min_confidence`` · ``max_age_s``, 0 이면 검출기 기본값) /
-응답 ``found`` · ``confidence`` · ``label`` · bbox (``cx`` ``cy`` ``w`` ``h``, 0~1 정규화)
-· ``stamp`` · ``detail`` (``""`` · ``stale`` · ``no_frame`` · ``unknown_target`` ·
-``model_not_loaded`` · ``stub``).
+요청 ``target`` (어휘 키, + ``min_confidence`` · ``max_age_s``, 0 이면 검출기 기본값) /
+응답 ``found`` · ``confidence`` · ``label`` (YOLO 클래스) · bbox (``cx`` ``cy`` ``w`` ``h``, 0~1 정규화)
+· ``stamp`` (검출된 프레임의 영상 원본 시각, 못 찾으면 0) · ``detail``.
 
-새로 추론하지 않고 최근 0.6초 창에서 답하므로 수 ms 안에 돌아온다. 한 프레임의 깜빡임으로
-판정이 뒤집히지 않는다.
+``detail``: ``""`` (보통 판정) · ``stub`` (데모 스텁) · ``no_frame`` · ``stale`` · ``insufficient_frames`` ·
+``unknown_target`` · ``unsupported_class`` · ``model_not_loaded`` · ``inference_error`` · ``invalid_request``.
+오케스트레이터 쪽에서 붙는 ``no_detector`` · ``detector_timeout`` · ``detector_error`` 도 같은 칸에 실린다.
+
+새로 추론하지 않고 최근 창에서 답하므로 빨리 돌아온다. 판정 기준과 결과별 동작은 이 섹션 머리의
+**사전 확인 규약** (``RULE-PRECHECK``) 을 따른다.
 <<<
-PRECONDITION: detector_node 기동
+PRECONDITION: detector_node 기동 (실기 프로필은 가중치 파일 필요)
 COMMENT: >>>
-현재 ``backend: always`` 스텁이라 모든 target 을 보인다고 답한다 (``detail`` ``stub``, 카메라도 받지 않는다).
-YOLO 백엔드 코드는 있지만 실제로 켜려면 셋이 더 필요하다:
+2026-10-05 YOLO 연동이 main 에 들어왔다 (cortex #29, 황재영). 실기 기본값(``cortex_params.yaml``)이
+``backend: yolo`` · fail-closed 로 바뀌었고, 데모(``llm_demo.launch.py``)만 ``always`` 스텁 · fail-open 이다.
+이전 정책 "안 보임일 때만 중단, 판정 불가는 진행" 은 데모 프로필에만 남았다.
 
-- **실행 환경** — cortex 도커 이미지에 ultralytics · torch · GPU 가 없어 ``backend: yolo`` 로 바꿔도
-  ``model_not_loaded`` 로 답한다 (fail-open 으로 진행).
-- **가중치** — 오이는 COCO 에 없어 시연 환경 데이터로 파인튜닝한 가중치가 필요하다.
-- **설정** — ``backend: yolo`` · ``model`` 경로 · 대상 키 → 클래스 매핑(``target_keys`` / ``target_classes``).
-
-YOLO 연동 PR 이 진행 중이다 (cortex #29, 2026-10-04 미머지). 머지되면 이 노드를 다시 고친다.
-
-**"안 보임" 일 때만 계획을 중단한다.** 검출기가 없거나 프레임이 없어 판정 자체가 불가능한
-경우는 fail-open 으로 진행한다 — 판정기가 죽어서 로봇이 멈추는 쪽이 더 나쁘다.
+대상 키 → YOLO 클래스: ``fridge_door`` · ``fridge`` → ``refrigerator``, ``cucumber`` → ``cucumber``,
+``user`` → ``person`` (현재 가중치에 없어 ``unsupported_class``).
 <<<
 RELATIONS:
 - TYPE: Parent
@@ -1022,9 +1119,19 @@ RELATIONS:
 - TYPE: File
   VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/orchestrator_node.py
 - TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/executor.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/cortex_cognition/planner.py
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_cognition/config/actions.yaml
+- TYPE: File
   VALUE: _src/cortex/src/cortex_perception/cortex_perception/detector_node.py
 - TYPE: File
+  VALUE: _src/cortex/src/cortex_perception/cortex_perception/detection.py
+- TYPE: File
   VALUE: _src/cortex/src/cortex_msgs/srv/CheckTarget.srv
+- TYPE: File
+  VALUE: _src/cortex/src/cortex_bringup/config/cortex_params.yaml
 
 [ICD]
 UID: ICD-81
@@ -1106,7 +1213,9 @@ MSG_TYPE: cortex_msgs/DetectionArray
 QOS: BestEffort
 FREQUENCY: 8 Hz
 STATEMENT: >>>
-``Detection`` 배열 (``label`` · ``confidence`` · bbox). 최근 추론 결과를 그대로 공개한다.
+``Detection`` 배열 (``label`` · ``confidence`` · bbox) + ``model`` · ``infer_ms``. 최근 추론 결과를
+그대로 공개한다. ``header`` 의 시각 · ``frame_id`` 는 추론한 영상 프레임의 원본 값이다.
+실기 프로필(``backend: yolo``)에서만 나온다.
 <<<
 PRECONDITION: detector_node 기동
 COMMENT: >>>
@@ -1217,8 +1326,9 @@ H.264 NAL + ``seq`` / ``stamp`` / ``width`` / ``height`` / ``keyframe``.
 소비처: detector_node(대상 확인) · gui_bridge_node(표시) · vla-inference(정책 관측).
 
 cortex 는 ROS 메시지 ``kist_msgs/CompressedColorFrame`` 으로 ``/kist/camera/head/color/h264`` 를 구독해
-PyAV 로 디코드한다. gui_bridge 는 최신 프레임만 JPEG 로 (≤ 15 Hz) 내보내고, detector 는
-``backend: always`` 인 동안 카메라를 구독하지 않는다.
+PyAV 로 디코드한다. gui_bridge 는 최신 프레임만 JPEG 로 (≤ 15 Hz) 내보낸다. detector 는 실기
+프로필(``backend: yolo``)에서 best-effort · depth 1 로 구독해 프레임 원본 시각을 유지하고, 데모
+(``always`` 스텁)에서는 구독하지 않는다.
 <<<
 PRECONDITION: ext-sensor tx(카메라) 활성
 COMMENT: >>>
