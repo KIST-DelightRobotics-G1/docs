@@ -132,8 +132,9 @@ UID: TC-104
 TITLE: 오이 파지 (grasp_cucumber)
 METHOD: Demonstration
 STATEMENT: >>>
-1. ``CheckTarget(cucumber)`` 로 오이가 보이는지 확인한 뒤 ``take_out(cucumber, fridge)`` 를
-   ``instruction`` "Take the cucumber out of the refrigerator." 와 함께 발사한다.
+1. ``CheckTarget(fridge)`` · ``CheckTarget(cucumber)`` 로 냉장고와 오이가 둘 다 보이는지 확인한 뒤
+   ``take_out(cucumber, fridge)`` 를 VLA 학습 문장 "Reach out with the right hand and pick up the
+   cucumber inside the fridge." 와 함께 발사한다 (``pick(cucumber)`` 과 같은 문장, cortex #45).
 2. G1이 오이를 인식하고 파지한다.
 3. VLA 가 ``DONE`` 을 돌려주면 오케스트레이터가 ``holding`` 을 ``cucumber`` 로 갱신한다.
 <<<
@@ -164,7 +165,7 @@ STATEMENT: >>>
 3. 마지막 ``DONE`` 과 ``END`` 를 함께 받으면 계획이 완료되고, ``holding`` 이 ``none`` 으로 돌아간다.
 <<<
 EXPECTED: >>>
-이동 중 파지 상태가 유지되고, 오이가 tray 지정 위치에 놓인다. 완료 안내 음성이 출력되며 시나리오가 정상 종료된다.
+이동 중 파지 상태가 유지되고, 오이가 tray 지정 위치에 놓인다. 완료 안내 음성("모두 마쳤습니다.", cortex #41)이 출력되며 시나리오가 정상 종료된다.
 <<<
 RELATIONS:
 - TYPE: Parent
