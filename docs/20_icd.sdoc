@@ -729,7 +729,7 @@ STATEMENT: >>>
    * - ``open(fridge_door)`` · ``close(fridge_door)``
      - ``fridge_door``
    * - ``take_out(cucumber,fridge)``
-     - ``fridge`` **그리고** ``cucumber``
+     - ``cucumber`` (냉장고는 확인하지 않는다, cortex #46)
    * - ``pick(cucumber)``
      - ``cucumber`` (냉장고는 확인하지 않는다)
    * - ``handover(cucumber,user)``
